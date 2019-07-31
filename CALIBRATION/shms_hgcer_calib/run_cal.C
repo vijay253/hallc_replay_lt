@@ -30,16 +30,23 @@ void run_cal(Int_t RunNumber = 0, Int_t NumEvents = 0, Int_t coin = 0)
   getline(std::cin, calib_raw);
   TString calib_option = calib_raw;
   
-  string eff_raw;
-  cout << "\nEnter options for efficiency (enter NA to skip): ";
-  getline(std::cin, eff_raw);
-  TString eff_option = eff_raw;
+  /*  string eff_raw;
+    cout << "\nEnter options for efficiency (enter NA to skip): ";
+    getline(std::cin, eff_raw);
+    TString eff_option = eff_raw;
 
-  cout << "\n\n";
-
+   cout << "\n\n";
+  */
   TChain ch("T");
-  if (coin == 1) ch.Add(Form("../../ROOTfiles/shms_coin_replay_production_all_%d_%d.root", RunNumber, NumEvents));
-  else ch.Add(Form("../../ROOTfiles/shms_replay_production_all_%d_%d.root", RunNumber, NumEvents));
+  if (coin == 1) ch.Add(Form("/d8tb3/vijay/ROOTfiles/shms_coin_replay_production_all_%d_%d.root",RunNumber,NumEvents));
+  // ch.Add(Form("ROOTfiles/shms_coin_replay_production_all_%d_%d.root", 8089,-1));
+		      // ch.Add(Form("ROOTfiles/shms_coin_replay_production_all_%d_%d.root", 8090,-1));}
+//ch.Add(Form("ROOTfiles/shms_coin_replay_production_all_%d_%d.root", 8091,-1));
+		  //   ch.Add(Form("ROOTfiles/shms_coin_replay_production_all_%d_%d.root", 8092,-1));
+		  //  ch.Add(Form("ROOTfiles/shms_coin_replay_production_all_%d_%d.root", 8093,-1));
+		  //   ch.Add(Form("ROOTfiles/shms_coin_replay_production_all_%d_%d.root", 8094,-1));
+		  //  ch.Add(Form("ROOTfiles/shms_coin_replay_production_all_%d_%d.root", 8095,-1)); }
+  else ch.Add(Form("ROOTfiles/shms_replay_production_all_%d_%d.root", RunNumber, NumEvents));
   TProof *proof = TProof::Open("workers=4");
   proof->SetProgressDialog(0);  
   ch.SetProof();
@@ -73,6 +80,6 @@ void run_cal(Int_t RunNumber = 0, Int_t NumEvents = 0, Int_t coin = 0)
 	  remove("calibration_temp.txt"); 
 	}
     }
-
-  if (eff_option != "NA") ch.Process("efficiencies.C+",eff_option);
+ 
+  //  if (eff_option != "NA") ch.Process("efficiencies.C+",eff_option);
 }

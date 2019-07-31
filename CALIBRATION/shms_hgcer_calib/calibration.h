@@ -46,7 +46,14 @@ public :
    TH1F           *fBeta_Cut;
    TH1F           *fBeta_Full;
    TH1F           *fTiming_Cut;
+   // TH2F            *fTiming_Cut;
    TH1F           *fTiming_Full;
+   // TH2F           *fTiming_Full;
+   TH1F            *fTim1;
+   TH1F            *fTim2;
+   TH1F            *fTim3;
+   TH1F            *fTim4;
+  
 
    // Declaration of histograms used in fitting/analysis
    TH1F *fscaled[4];
@@ -59,7 +66,7 @@ public :
    TH1F *fscaled_temp_mk2[4];
    TH1F *fscaled_combined_mk2[4];
    TH1F *fscaled_total_mk2;
-
+   
    // Declaration of canvases used in fitting/analysis
    TCanvas *quad_cuts_ipmt;
    TCanvas *low_stats_ipmt;
@@ -70,8 +77,8 @@ public :
    TCanvas *final_spectra_combined;
    TCanvas *final_spectra_combined_mk2;
    TCanvas *scaled_poisson;
-   TCanvas *scaled_total;   
-
+   TCanvas *scaled_total;  
+ 
    // Declaration of preprocessing quantities
    Double_t  timing_mean[4];
    Double_t  timing_std[4];
@@ -80,6 +87,8 @@ public :
    TTreeReaderValue<Int_t>    Ndata_P_tr_beta            = {fReader, "Ndata.P.tr.beta"};
    TTreeReaderArray<Double_t> P_tr_beta                  = {fReader, "P.tr.beta"};
    TTreeReaderArray<Double_t> P_hgcer_goodAdcTdcDiffTime = {fReader, "P.hgcer.goodAdcTdcDiffTime"};
+   // TTreeReaderArray<Double_t> P_hgcer_goodAdcTdcDiffTime = {fReader, "Ndata.P.hgcer.goodAdcTdcDiffTime"};
+
    TTreeReaderArray<Double_t> P_hgcer_goodAdcPulseInt    = {fReader, "P.hgcer.goodAdcPulseInt"};
    TTreeReaderArray<Double_t> P_hgcer_goodAdcPulseAmp    = {fReader, "P.hgcer.goodAdcPulseAmp"};
    TTreeReaderArray<Double_t> P_hgcer_numTracksFired     = {fReader, "P.hgcer.numTracksFired"};
@@ -91,6 +100,8 @@ public :
    TTreeReaderArray<Double_t> P_tr_ph                    = {fReader, "P.tr.ph"};
    TTreeReaderArray<Double_t> P_tr_y                     = {fReader, "P.tr.y"};
    TTreeReaderArray<Double_t> P_tr_th                    = {fReader, "P.tr.th"};
+   TTreeReaderArray<Double_t> P_hgcer_xAtCer             = {fReader, "P.hgcer.xAtCer"};
+   TTreeReaderArray<Double_t> P_hgcer_yAtCer             = {fReader, "P.hgcer.yAtCer"};
   
  calibration(TTree * /*tree*/ =0) : fChain(0) {fPulseInt = 0, fPulseInt_quad = 0, fCut_everything = 0, fCut_enorm=0, fCut_electron = 0, fCut_pion = 0, fBeta_Cut = 0, fBeta_Full = 0, fTiming_Cut = 0, fTiming_Full = 0, fFullRead = kFALSE, fFullShow = kFALSE, fTrack = kFALSE, fCut = kFALSE, fPions = kFALSE;}
    virtual ~calibration() { }
