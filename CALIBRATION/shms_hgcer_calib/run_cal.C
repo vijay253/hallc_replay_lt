@@ -6,7 +6,7 @@
 
 void run_cal(Int_t RunNumber = 0, Int_t NumEvents = 0, Int_t coin = 0)
 {
-  if (RunNumber == 0)
+   if (RunNumber == 0)
     {
       cout << "Enter a Run Number (-1 to exit): ";
       cin >> RunNumber;
@@ -14,14 +14,14 @@ void run_cal(Int_t RunNumber = 0, Int_t NumEvents = 0, Int_t coin = 0)
     }
   if (NumEvents == 0)
     {
-      cout << "\nNumber of Events to analyze: ";
-      cin >> NumEvents;
+       cout << "\nNumber of Events to analyze: ";
+       cin >> NumEvents;
       }
   if (coin == 0)
     {
-      cout << "\nIf this is a coincident run enter 1: ";
-      cin >> coin;
-    }
+       cout << "\nIf this is a coincident run enter 1: ";
+       cin >> coin;
+      }
 
   cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
@@ -38,14 +38,14 @@ void run_cal(Int_t RunNumber = 0, Int_t NumEvents = 0, Int_t coin = 0)
    cout << "\n\n";
   */
   TChain ch("T");
-  if (coin == 1) ch.Add(Form("/d8tb3/vijay/ROOTfiles/shms_coin_replay_production_all_%d_%d.root",RunNumber,NumEvents));
-  // ch.Add(Form("ROOTfiles/shms_coin_replay_production_all_%d_%d.root", 8089,-1));
-		      // ch.Add(Form("ROOTfiles/shms_coin_replay_production_all_%d_%d.root", 8090,-1));}
-//ch.Add(Form("ROOTfiles/shms_coin_replay_production_all_%d_%d.root", 8091,-1));
-		  //   ch.Add(Form("ROOTfiles/shms_coin_replay_production_all_%d_%d.root", 8092,-1));
-		  //  ch.Add(Form("ROOTfiles/shms_coin_replay_production_all_%d_%d.root", 8093,-1));
-		  //   ch.Add(Form("ROOTfiles/shms_coin_replay_production_all_%d_%d.root", 8094,-1));
-		  //  ch.Add(Form("ROOTfiles/shms_coin_replay_production_all_%d_%d.root", 8095,-1)); }
+  if (coin == 1){ch.Add(Form("ROOTfiles/shms_coin_replay_production_all_%d_%d.root",RunNumber,NumEvents));
+      ch.Add(Form("ROOTfiles/shms_coin_replay_production_all_%d_%d.root",4781,-1));
+		 	 ch.Add(Form("ROOTfiles/shms_coin_replay_production_all_%d_%d.root",4782,-1));
+		  ch.Add(Form("ROOTfiles/shms_coin_replay_production_all_%d_%d.root",4883,-1));
+			 ch.Add(Form("ROOTfiles/shms_coin_replay_production_all_%d_%d.root",4783,-1));
+		 ch.Add(Form("ROOTfiles/shms_coin_replay_production_all_%d_%d.root",4781,-1));
+		  ch.Add(Form("ROOTfiles/shms_coin_replay_production_all_%d_%d.root",4803,-1));}
+  //ch.Add(Form("ROOTfiles/shms_coin_replay_production_all_%d_%d.root",,-1)); }
   else ch.Add(Form("ROOTfiles/shms_replay_production_all_%d_%d.root", RunNumber, NumEvents));
   TProof *proof = TProof::Open("workers=4");
   proof->SetProgressDialog(0);  

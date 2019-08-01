@@ -117,14 +117,14 @@ void calibration::SlaveBegin(TTree * /*tree*/)
     }
 
 
-  fTim1 = new TH1F("Timing_PMT1", "ADC TDC Diff PMT1 ; Time (ns) ;Counts", 400, -40.0, 40.0);
-  GetOutputList()->Add(fTim1);
-  fTim2 = new TH1F("Timing_PMT2", "ADC TDC Diff PMT2 ; Time (ns) ;Counts", 400, -40.0, 40.0);
-  GetOutputList()->Add(fTim2);
-  fTim3 = new TH1F("Timing_PMT3", "ADC TDC Diff PMT3 ; Time (ns) ;Counts", 400, -40.0, 40.0);
-  GetOutputList()->Add(fTim3);
-  fTim4 = new TH1F("Timing_PMT4", "ADC TDC Diff PMT4 ; Time (ns) ;Counts", 400, -40.0, 40.0);
-  GetOutputList()->Add(fTim4);
+  //fTim1 = new TH1F("Timing_PMT1", "ADC TDC Diff PMT1 ; Time (ns) ;Counts", 400, -40.0, 40.0);
+  //GetOutputList()->Add(fTim1);
+  //fTim2 = new TH1F("Timing_PMT2", "ADC TDC Diff PMT2 ; Time (ns) ;Counts", 400, -40.0, 40.0);
+  //GetOutputList()->Add(fTim2);
+  //fTim3 = new TH1F("Timing_PMT3", "ADC TDC Diff PMT3 ; Time (ns) ;Counts", 400, -40.0, 40.0);
+  //GetOutputList()->Add(fTim3);
+  //fTim4 = new TH1F("Timing_PMT4", "ADC TDC Diff PMT4 ; Time (ns) ;Counts", 400, -40.0, 40.0);
+  // GetOutputList()->Add(fTim4);
 
   //Timing and Beta cut visualizations
   fBeta_Cut = new TH1F("Beta_Cut", "Beta cut used for 'good' hits;Beta;Counts", 100, -0.1, 1.5);
@@ -207,9 +207,9 @@ Bool_t calibration::Process(Long64_t entry)
       for (Int_t ipmt = 0; ipmt < fpmts; ipmt++) 
 	{	  
 	  //Perform a loose timing cut    
-fTiming_Full->Fill(P_hgcer_goodAdcTdcDiffTime[ipmt]);
+	  fTiming_Full->Fill(P_hgcer_goodAdcTdcDiffTime[ipmt]);       //doubt here
 
-	  if(ipmt ==0){
+/* if(ipmt ==0){
 
           fTim1->Fill(P_hgcer_goodAdcTdcDiffTime[ipmt]);
 
@@ -229,24 +229,23 @@ fTiming_Full->Fill(P_hgcer_goodAdcTdcDiffTime[ipmt]);
 
           fTim4->Fill(P_hgcer_goodAdcTdcDiffTime[ipmt]);
       
-	  }
+	  }*/
 	      // cut modified by VK, 24/05/19
 
-  if(P_hgcer_goodAdcTdcDiffTime[ipmt] >40 || P_hgcer_goodAdcTdcDiffTime[ipmt] < 20) continue;
- // if (P_hgcer_goodAdcTdcDiffTime[1]>-6 || P_hgcer_goodAdcTdcDiffTime[1] < -14) continue;
+  if(P_hgcer_goodAdcTdcDiffTime[ipmt] >20 || P_hgcer_goodAdcTdcDiffTime[ipmt] < 4) continue;
 	   
  // fTiming_Cut->Fill(P_hgcer_xAtCer[ipmt],P_hgcer_yAtCer[ipmt]);
 
          fTiming_Cut->Fill(P_hgcer_goodAdcTdcDiffTime[ipmt]);
 	   
-	  //Cuts to remove entries corresponding to a PMT not registering a hit
+	  //Cuts to remove entries corresponding to a PMT not registering a hit    
 	  if (P_hgcer_goodAdcPulseInt[ipmt] == 0.0) continue;
 	 	  
 	  //For quadrant cut strategy with particle ID cuts. In this case electrons are selected
 	  if (!fTrack && fCut && !fPions)
 	    {
 	      //Retrieve particle ID information
-	      Float_t central_p = 6.0530;
+	      Float_t central_p = 8.035;             // old value 6.0530
 	      Float_t p = ((P_gtr_dp[0]/100.0)*central_p) + central_p;
 
 	      //Fill histogram visualizaing the electron selection
@@ -261,8 +260,8 @@ fTiming_Full->Fill(P_hgcer_goodAdcTdcDiffTime[ipmt]);
 	      //Float_t esemiminor_axis = 0.04;
 
 	      Float_t eangle = 3.0*3.14159/4.0;                             
-	      Float_t ex_center = 0.375;
-	      Float_t ey_center = 0.360;
+	      Float_t ex_center = 0.65;                                  // Old value 0.375
+	      Float_t ey_center = 0.35;                                 // old value 0.360
 	      Float_t esemimajor_axis = 0.38;
 	      Float_t esemiminor_axis = 0.05;
 	      if (pow((*P_cal_fly_earray/p - ex_center)*cos(eangle) + (*P_cal_pr_eplane/p - ey_center)*sin(eangle),2)/pow(esemimajor_axis,2) + 
@@ -522,7 +521,7 @@ void calibration::Terminate()
       Timing->cd(2);
       fTiming_Cut->Draw("Colz");
       Timing->SaveAs("vijay.pdf");
-      TCanvas *Timing1;
+      /*  TCanvas *Timing1;
       Timing1 = new TCanvas("Timing1","time info.");
       Timing1->Divide(2,2);
       Timing1->cd(1);
@@ -540,7 +539,7 @@ TCanvas *pmt1_2;
       pmt1_2->cd(1);
       // fPMT1_2->Draw("Colz");
    
-   } 
+      */  } 
 
 
 
