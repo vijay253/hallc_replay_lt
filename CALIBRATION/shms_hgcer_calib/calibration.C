@@ -262,8 +262,8 @@ Bool_t calibration::Process(Long64_t entry)
 	      Float_t eangle = 3.0*3.14159/4.0;                             
 	      Float_t ex_center = 0.65;                                  // Old value 0.375
 	      Float_t ey_center = 0.35;                                 // old value 0.360
-	      Float_t esemimajor_axis = 0.38;
-	      Float_t esemiminor_axis = 0.05;
+	      Float_t esemimajor_axis = 0.30;
+	      Float_t esemiminor_axis = 0.08;
 	      if (pow((*P_cal_fly_earray/p - ex_center)*cos(eangle) + (*P_cal_pr_eplane/p - ey_center)*sin(eangle),2)/pow(esemimajor_axis,2) + 
 		    pow((*P_cal_fly_earray/p - ex_center)*sin(eangle) - (*P_cal_pr_eplane/p - ey_center)*cos(eangle),2)/pow(esemiminor_axis,2) < 1
 		  /* P_cal_etotnorm > 0.4*/)
@@ -306,9 +306,9 @@ Bool_t calibration::Process(Long64_t entry)
 
 	      //Cut on Shower vs preshower is a tilted ellipse, this requires an angle of rotation (in radians), x/y center, semimajor and semiminor axis
 	      Float_t piangle = 0.0;
-	      Float_t pix_center = 0.4;
+	      Float_t pix_center = 0.3;
 	      Float_t piy_center = 0.03;
-	      Float_t pisemimajor_axis = 0.2;
+	      Float_t pisemimajor_axis = 0.3;
 	      Float_t pisemiminor_axis = 0.02;
 	      if (pow((*P_cal_fly_earray/p - pix_center)*cos(piangle) + (*P_cal_pr_eplane/p - piy_center)*sin(piangle),2)/pow(pisemimajor_axis,2) + 
 		  pow((*P_cal_fly_earray/p - pix_center)*sin(piangle) - (*P_cal_pr_eplane/p - piy_center)*cos(piangle),2)/pow(pisemiminor_axis,2) < 1)
@@ -541,9 +541,6 @@ TCanvas *pmt1_2;
    
       */  } 
 
-
-
-  
   //Show the particle cuts performed in the histogram forming
   if (fCut)
     {
