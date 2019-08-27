@@ -92,7 +92,7 @@ void calibration::SlaveBegin(TTree * /*tree*/)
   Int_t bins;
 
   ADC_min = 0;
-  ADC_max = 100;
+  ADC_max = 200;
   bins = 2*(abs(ADC_min) + abs(ADC_max));
 
   fPulseInt = new TH1F*[4];
@@ -117,19 +117,18 @@ void calibration::SlaveBegin(TTree * /*tree*/)
     }
 
 
-  //fTim1 = new TH1F("Timing_PMT1", "ADC TDC Diff PMT1 ; Time (ns) ;Counts", 400, -40.0, 40.0);
-  //GetOutputList()->Add(fTim1);
-  //fTim2 = new TH1F("Timing_PMT2", "ADC TDC Diff PMT2 ; Time (ns) ;Counts", 400, -40.0, 40.0);
-  //GetOutputList()->Add(fTim2);
-  //fTim3 = new TH1F("Timing_PMT3", "ADC TDC Diff PMT3 ; Time (ns) ;Counts", 400, -40.0, 40.0);
-  //GetOutputList()->Add(fTim3);
-  //fTim4 = new TH1F("Timing_PMT4", "ADC TDC Diff PMT4 ; Time (ns) ;Counts", 400, -40.0, 40.0);
-  // GetOutputList()->Add(fTim4);
+  fTim1 = new TH1F("Timing_PMT1", "ADC TDC Diff PMT1 ; Time (ns) ;Counts", 400, -40.0, 40.0);
+  GetOutputList()->Add(fTim1);
+  fTim2 = new TH1F("Timing_PMT2", "ADC TDC Diff PMT2 ; Time (ns) ;Counts", 400, -40.0, 40.0);
+  GetOutputList()->Add(fTim2);
+  fTim3 = new TH1F("Timing_PMT3", "ADC TDC Diff PMT3 ; Time (ns) ;Counts", 400, -40.0, 40.0);
+  GetOutputList()->Add(fTim3);
+  fTim4 = new TH1F("Timing_PMT4", "ADC TDC Diff PMT4 ; Time (ns) ;Counts", 400, -40.0, 40.0);
+  GetOutputList()->Add(fTim4);
 
   //Timing and Beta cut visualizations
   fBeta_Cut = new TH1F("Beta_Cut", "Beta cut used for 'good' hits;Beta;Counts", 100, -0.1, 1.5);
-  GetOutputList()->Add(fBeta_Cut);
-   
+  GetOutputList()->Add(fBeta_Cut); 
   
   fBeta_Full = new TH1F("Beta_Full", "Full beta for events;Beta;Counts", 100, -0.1, 1.5);
   GetOutputList()->Add(fBeta_Full);
@@ -209,34 +208,42 @@ Bool_t calibration::Process(Long64_t entry)
 	  //Perform a loose timing cut    
 	  fTiming_Full->Fill(P_hgcer_goodAdcTdcDiffTime[ipmt]);       //doubt here
 
-/* if(ipmt ==0){
+	  if(ipmt ==0){
 
-          fTim1->Fill(P_hgcer_goodAdcTdcDiffTime[ipmt]);
+	    if(P_hgcer_goodAdcTdcDiffTime[ipmt] >13 || P_hgcer_goodAdcTdcDiffTime[ipmt] < 9) continue;
+
+	    fTim1->Fill(P_hgcer_goodAdcTdcDiffTime[ipmt]);
 
 	  }
 
- if(ipmt ==1){
+	  if(ipmt ==1){
 
-          fTim2->Fill(P_hgcer_goodAdcTdcDiffTime[ipmt]);
+	    if(P_hgcer_goodAdcTdcDiffTime[ipmt] >12 || P_hgcer_goodAdcTdcDiffTime[ipmt] < 7) continue;
+
+	    fTim2->Fill(P_hgcer_goodAdcTdcDiffTime[ipmt]);
       
 	  }
- if(ipmt ==2){
+	  if(ipmt ==2){
 
-          fTim3->Fill(P_hgcer_goodAdcTdcDiffTime[ipmt]);
+	    if(P_hgcer_goodAdcTdcDiffTime[ipmt] >12 || P_hgcer_goodAdcTdcDiffTime[ipmt] < 7) continue;
+
+	    fTim3->Fill(P_hgcer_goodAdcTdcDiffTime[ipmt]);
       
 	  }
- if(ipmt ==3){
+	  if(ipmt ==3){
 
-          fTim4->Fill(P_hgcer_goodAdcTdcDiffTime[ipmt]);
+	    if(P_hgcer_goodAdcTdcDiffTime[ipmt] >12 || P_hgcer_goodAdcTdcDiffTime[ipmt] < 8) continue;
+
+	    fTim4->Fill(P_hgcer_goodAdcTdcDiffTime[ipmt]);
       
-	  }*/
-	      // cut modified by VK, 24/05/19
+	  }
+	  // cut modified by VK, 24/05/19
 
-  if(P_hgcer_goodAdcTdcDiffTime[ipmt] >20 || P_hgcer_goodAdcTdcDiffTime[ipmt] < 4) continue;
+	  // if(P_hgcer_goodAdcTdcDiffTime[ipmt] >20 || P_hgcer_goodAdcTdcDiffTime[ipmt] < 4) continue;
 	   
- // fTiming_Cut->Fill(P_hgcer_xAtCer[ipmt],P_hgcer_yAtCer[ipmt]);
+	  // fTiming_Cut->Fill(P_hgcer_xAtCer[ipmt],P_hgcer_yAtCer[ipmt]);
 
-         fTiming_Cut->Fill(P_hgcer_goodAdcTdcDiffTime[ipmt]);
+	  // fTiming_Cut->Fill(P_hgcer_goodAdcTdcDiffTime[ipmt]);
 	   
 	  //Cuts to remove entries corresponding to a PMT not registering a hit    
 	  if (P_hgcer_goodAdcPulseInt[ipmt] == 0.0) continue;
@@ -245,8 +252,13 @@ Bool_t calibration::Process(Long64_t entry)
 	  if (!fTrack && fCut && !fPions)
 	    {
 	      //Retrieve particle ID information
-	      Float_t central_p = 8.035;             // old value 6.0530
-	      Float_t p = ((P_gtr_dp[0]/100.0)*central_p) + central_p;
+
+	      //  Float_t central_p = 8.035;             // old value 6.0530
+
+
+	      //  Float_t p = ((P_gtr_dp[0]/100.0)*central_p) + central_p;
+
+	      Double_t p = *P_gtr_p;
 
 	      //Fill histogram visualizaing the electron selection
 	      fCut_everything->Fill(*P_cal_fly_earray/p, *P_cal_pr_eplane/p);                  
@@ -265,7 +277,7 @@ Bool_t calibration::Process(Long64_t entry)
 	      Float_t esemimajor_axis = 0.30;
 	      Float_t esemiminor_axis = 0.08;
 	      if (pow((*P_cal_fly_earray/p - ex_center)*cos(eangle) + (*P_cal_pr_eplane/p - ey_center)*sin(eangle),2)/pow(esemimajor_axis,2) + 
-		    pow((*P_cal_fly_earray/p - ex_center)*sin(eangle) - (*P_cal_pr_eplane/p - ey_center)*cos(eangle),2)/pow(esemiminor_axis,2) < 1
+		  pow((*P_cal_fly_earray/p - ex_center)*sin(eangle) - (*P_cal_pr_eplane/p - ey_center)*cos(eangle),2)/pow(esemiminor_axis,2) < 1
 		  /* P_cal_etotnorm > 0.4*/)
 		{
 		  //Fill histogram visualizing the electron selection
@@ -294,13 +306,16 @@ Bool_t calibration::Process(Long64_t entry)
 
 
 	  //For quadrant cut strategy with particle ID cuts. In this case pions are selected
-	    if (!fTrack && fCut && fPions)
+	  if (!fTrack && fCut && fPions)
 	    {
 	      //Retrieve particle ID information
-	      Float_t central_p = 6.0530;
-	      Float_t p = ((P_gtr_dp[0]/100.0)*central_p) + central_p;  //
+	      // Float_t central_p = 6.0530;
+	      // Float_t p = ((P_gtr_dp[0]/100.0)*central_p) + central_p;  //
 
 	      //Fill histogram visualizaing the pion selection
+
+              Double_t p = *P_gtr_p;
+
 	      fCut_everything->Fill(*P_cal_fly_earray/p, *P_cal_pr_eplane/p);
 	      fCut_enorm->Fill(*P_cal_etotnorm);
 
@@ -337,7 +352,7 @@ Bool_t calibration::Process(Long64_t entry)
 		  if (y_pos < 4.6 && x_pos < 9.4) fPulseInt_quad[3][ipmt]->Fill(P_hgcer_goodAdcPulseInt[ipmt]);
 		}
 	    }   
-  //Marks end of pion selection condition
+	  //Marks end of pion selection condition
 		      
 	  //For quadrant cut strategy with no particle ID cut
 	  if (!fTrack && !fCut)
@@ -381,10 +396,13 @@ Bool_t calibration::Process(Long64_t entry)
 	  if (fTrack && fCut && !fPions)
 	    {
 	      //Retrieve particle ID information
-	      Float_t central_p = 6.0530;
-	      Float_t p = ((P_gtr_dp[0]/100.0)*central_p) + central_p;
+	      // Float_t central_p = 6.0530;
+	      // Float_t p = ((P_gtr_dp[0]/100.0)*central_p) + central_p;
 
 	      //Fill histogram visualizaing the electron selection
+
+	      Double_t p = *P_gtr_p;
+
 	      fCut_everything->Fill(*P_cal_fly_earray/p, *P_cal_pr_eplane/p);
 
 	      //Cut on Shower vs preshower is a tilted ellipse, this requires an angle of rotation (in radians), x/y center, semimajor and semiminor axis
@@ -414,10 +432,13 @@ Bool_t calibration::Process(Long64_t entry)
 	  if (fTrack && fCut && fPions)
 	    {
 	      //Retrieve particle ID information
-	      Float_t central_p = 6.0530;
-	      Float_t p = ((P_gtr_dp[0]/100.0)*central_p) + central_p;
+	      // Float_t central_p = 6.0530;
+	      // Float_t p = ((P_gtr_dp[0]/100.0)*central_p) + central_p;
 
 	      //Fill histogram visualizaing the electron selection
+
+              Double_t p = *P_gtr_p;
+
 	      fCut_everything->Fill(*P_cal_fly_earray/p, *P_cal_pr_eplane/p);
 
 	      //Cut on Shower vs preshower is a tilted ellipse, this requires an angle of rotation (in radians), x/y center, semimajor and semiminor axis
@@ -453,9 +474,9 @@ Bool_t calibration::Process(Long64_t entry)
 
 void calibration::SlaveTerminate()
 {
-   // The SlaveTerminate() function is called after all entries or objects
-   // have been processed. When running with PROOF SlaveTerminate() is called
-   // on each slave server.
+  // The SlaveTerminate() function is called after all entries or objects
+  // have been processed. When running with PROOF SlaveTerminate() is called
+  // on each slave server.
 }
 
 void calibration::Terminate()
@@ -479,12 +500,12 @@ void calibration::Terminate()
   TH1F* PulseInt[4];
   TH1F* PulseInt_quad[4][4];
   for (Int_t ipmt = 0; ipmt < 4; ipmt++)
-     {
+    {
       PulseInt[ipmt] = dynamic_cast<TH1F*> (GetOutputList()->FindObject(Form("PulseInt_PMT%d",ipmt+1)));
       for (Int_t iquad = 0; iquad < 4; iquad++)
 	{
 	  PulseInt_quad[iquad][ipmt] = dynamic_cast<TH1F*> (GetOutputList()->FindObject(Form("PulseInt_quad%d_PMT%d",iquad+1,ipmt+1)));
-	  } 
+	} 
     }
 
   //Rebin the histograms, add functionality to bin HGC & NGC independently
@@ -497,7 +518,7 @@ void calibration::Terminate()
 	  }
 	PulseInt[ipmt]->Rebin(4);
       }
-      }
+  }
 
   //Canvases to display cut information
   if (fFullShow)
@@ -521,7 +542,7 @@ void calibration::Terminate()
       Timing->cd(2);
       fTiming_Cut->Draw("Colz");
       Timing->SaveAs("vijay.pdf");
-      /*  TCanvas *Timing1;
+      TCanvas *Timing1;
       Timing1 = new TCanvas("Timing1","time info.");
       Timing1->Divide(2,2);
       Timing1->cd(1);
@@ -533,13 +554,13 @@ void calibration::Terminate()
       Timing1->cd(4);
       fTim4->Draw();
       
-TCanvas *pmt1_2;
+      TCanvas *pmt1_2;
       pmt1_2 = new TCanvas("pmt1_2","Bet. PMT1 &PMT2");
       pmt1_2->Divide(2,1);
       pmt1_2->cd(1);
-      // fPMT1_2->Draw("Colz");
+      //  fPMT1_2->Draw("Colz");
    
-      */  } 
+    } 
 
   //Show the particle cuts performed in the histogram forming
   if (fCut)
@@ -554,7 +575,7 @@ TCanvas *pmt1_2;
       cut_visualization->cd(2);
       fPions ? fCut_pion->Draw("Colz") : fCut_electron->Draw("Colz");
     }
-    gStyle->SetOptFit(111);
+  gStyle->SetOptFit(111);
 
   //Single Gaussian to find mean of SPE
   TF1 *Gauss1 = new TF1("Gauss1",gauss,100,3,3);
@@ -582,9 +603,12 @@ TCanvas *pmt1_2;
       
   //An array is used to store the means for the SPE, and to determine NPE spacing
   Double_t mean[3];
+  Double_t SD[3];
   Double_t mean_err[3];
   Double_t x_npe[3], y_npe[3], x_err[3], y_err[3];
-      
+  Double_t RChi2[3];
+  Bool_t GoodFit[3];
+  
   //Two more arrays are used to store the estimates for the calibration constants and another two to store goodness of calibration
   Double_t calibration_mk1[4], calibration_mk2[4], pmt_calib[4], pmt_calib_mk2[4];
 
@@ -593,7 +617,6 @@ TCanvas *pmt1_2;
   Pois_Chi[0] = 0.0, Pois_Chi[1] = 0.0;
 
   gStyle->SetOptFit(111);
-
   //Main loop for calibration
   for (Int_t ipmt=0; ipmt < (fhgc_pmts); ipmt++)
     {  
@@ -602,6 +625,7 @@ TCanvas *pmt1_2;
 	{
 	  mean[i] = 0.0;
 	  x_npe[i] = 0, y_npe[i] = 0, x_err[i] = 0, y_err[i] = 0;
+	  RChi2[i] = 0;
 	} 
       //Begin strategy for quadrant cut calibration
       if (!fTrack)
@@ -613,69 +637,96 @@ TCanvas *pmt1_2;
 	  if (fFullShow) quad_cuts_ipmt = new TCanvas(Form("quad_cuts_%d",ipmt), Form("First Photoelectron peaks PMT%d",ipmt+1));
 	  if (fFullShow) quad_cuts_ipmt->Divide(3,1);  
 	  
-	   Int_t ipad = 1; //Variable to draw over pads correctly
+	  Int_t ipad = 1; //Variable to draw over pads correctly
 	 
 	  for (Int_t iquad=0; iquad<4; iquad++)
 	    { 
 	      if (iquad == ipmt) continue; //ignore a PMT looking at its own quadrant
 	      if (fFullShow) quad_cuts_ipmt->cd(ipad);
 
-	       if (PulseInt_quad[iquad][ipmt]->GetEntries() > 0) 
+	      if (PulseInt_quad[iquad][ipmt]->GetEntries() > 0) 
 		{
 		  //Perform search for the SPE and save the peak into the array xpeaks
 		  fFullShow ? s->Search(PulseInt_quad[iquad][ipmt], 2.5, "nobackground",0.001) : s->Search(PulseInt_quad[iquad][ipmt], 2.5, "nobackground&&nodraw",0.001);
                     
-	       	 TList *functions = PulseInt_quad[iquad][ipmt]->GetListOfFunctions(); 
-	         TPolyMarker *pm = (TPolyMarker*)functions->FindObject("TPolyMarker");
+		  TList *functions = PulseInt_quad[iquad][ipmt]->GetListOfFunctions(); 
+		  TPolyMarker *pm = (TPolyMarker*)functions->FindObject("TPolyMarker");
 		  
 		  if ( pm == nullptr )               
-		     {
-		       cout << "pm is null!!!\n\n ";                                   
-		       cout << "ipmt = " << ipmt << " and iquad = " << iquad <<endl;
-		       continue;
-		       }
+		    {
+		      cout << "pm is null!!!\n\n ";                                   
+		      cout << "ipmt = " << ipmt << " and iquad = " << iquad <<endl;
+		      continue;
+		    }
                		 		  
-		   Double_t *xpeaks = pm->GetX();    
-               
-		  if (xpeaks[1] < xpeaks[0]) xpeaks[1] = xpeaks[0];
-              
+		  Double_t *xpeaks = pm->GetX();
+		  // if (xpeaks[1] < xpeaks[0]) xpeaks[1] = xpeaks[0];
+		  
 		  //Use the peak to fit the SPE with a Gaussian to determine the mean
-		  Gauss2->SetRange(xpeaks[0]-10, xpeaks[0]+10);
+		  Gauss2->SetRange(0,17);
 		  Gauss2->SetParameter(1, xpeaks[0]);
-		  Gauss2->SetParameter(2, 10.0);
-		  Gauss2->SetParameter(1, xpeaks[1]);
-		  Gauss2->SetParameter(2, 10.0);
-		  Gauss2->SetParLimits(0, 0., 1000.);
-		  Gauss2->SetParLimits(1, xpeaks[0]-3, xpeaks[0]+3);
+		  Gauss2->SetParameter(2, 5.0);
+		  Gauss2->SetParameter(4, xpeaks[1]);	
+		  Gauss2->SetParameter(5, 2.0);
+		  Gauss2->SetParLimits(0, 0., PulseInt_quad[iquad][ipmt]->GetBinContent(PulseInt_quad[iquad][ipmt]->GetXaxis()->FindBin(xpeaks[0])));
+		  Gauss2->SetParLimits(1, xpeaks[0]-1, xpeaks[0]+1);
 		  Gauss2->SetParLimits(2, 0.5, 10.);
-		  Gauss2->SetParLimits(3, 0., 500.);
-		  Gauss2->SetParLimits(4, xpeaks[1]-3, xpeaks[1]+3);
+		  Gauss2->SetParLimits(3, 0., PulseInt_quad[iquad][ipmt]->GetBinContent(PulseInt_quad[iquad][ipmt]->GetXaxis()->FindBin(xpeaks[1])));
+		  Gauss2->SetParLimits(4, xpeaks[1]-1, xpeaks[1]+1);
 		  Gauss2->SetParLimits(5, 0.5, 10.);
 		  fFullShow ? PulseInt_quad[iquad][ipmt]->Fit("Gauss2","RQ") : PulseInt_quad[iquad][ipmt]->Fit("Gauss2","RQN");
-		  if (fFullShow) PulseInt_quad[iquad][ipmt]->GetXaxis()->SetRangeUser(0,50);
+		  if (fFullShow) PulseInt_quad[iquad][ipmt]->GetXaxis()->SetRangeUser(0,17);
 
 		  //Store the mean of the SPE in the mean array provided it is not zero and passes a loose statistical cut. Note that indexing by ipad-1 is for convienience 
 
-		  cout << xpeaks[0] << "   " << PulseInt_quad[iquad][ipmt]->GetBinContent(PulseInt_quad[iquad][ipmt]->GetXaxis()->FindBin(xpeaks[0])) << endl;
+		  cout << xpeaks[0] <<endl;
+		  cout<< " Amplitude " << PulseInt_quad[iquad][ipmt]->GetBinContent(PulseInt_quad[iquad][ipmt]->GetXaxis()->FindBin(xpeaks[0])) << endl;
 
-		  if (xpeaks[0] > 2.0 && PulseInt_quad[iquad][ipmt]->GetBinContent(PulseInt_quad[iquad][ipmt]->GetXaxis()->FindBin(xpeaks[0])) > 90) mean[ipad-1] = Gauss2->GetParameter(1); cout<<" mean "<<mean[ipad-1]<<endl;  mean_err[ipad-1] = Gauss2->GetParError(1); 
+		  if (xpeaks[0] > 2.0 && PulseInt_quad[iquad][ipmt]->GetBinContent(PulseInt_quad[iquad][ipmt]->GetXaxis()->FindBin(xpeaks[0])) > 90) mean[ipad-1] = Gauss2->GetParameter(1); 
+		  // cout<<"   area under the peak "<<Gauss2->GetParameter(0)<<endl;
+		  if (xpeaks[0] > 2.0 && PulseInt_quad[iquad][ipmt]->GetBinContent(PulseInt_quad[iquad][ipmt]->GetXaxis()->FindBin(xpeaks[0])) > 90) SD[ipad-1] = Gauss2->GetParameter(2); 
+		  if (xpeaks[0] > 2.0 && PulseInt_quad[iquad][ipmt]->GetBinContent(PulseInt_quad[iquad][ipmt]->GetXaxis()->FindBin(xpeaks[0])) > 90) RChi2[ipad-1] = Gauss2->GetChisquare()/Gauss2->GetNDF();
+		  cout<< " SD " <<SD[ipad-1]<<endl;
+                  cout<<" mean "<<mean[ipad-1]<<endl;  mean_err[ipad-1] = Gauss2->GetParError(1); 
 		  cout<<"  error       "<<mean_err[ipad-1]<<endl;
+		  cout << " Chi2/DoF " << RChi2[ipad-1] << endl;
+		  if(RChi2[i] < 0.5 || RChi2[i] > 10) GoodPlot[ipad-1] == kFALSE; // Set Boolean of whether fit is good or not here
+		  else GoodPlot[ipad-1] == kTRUE;
 		  ipad++;
 		  
-	}
-	        }
+
+		  //Again Use the peak to fit the SPE with a Gaussian to determine the mean
+		  /*  Gauss2->SetRange(xpeaks[0]-10, xpeaks[0]+10);
+		      Gauss2->SetParameter(1, Gauss2->GetParameter(1));
+		      Gauss2->SetParameter(2, Gauss2->GetParameter(2) );
+		      Gauss2->SetParameter(4, Gauss2->GetParameter(4));
+		      Gauss2->SetParameter(5, Gauss2->GetParameter(5));
+		      Gauss2->SetParLimits(0, 3., PulseInt_quad[iquad][ipmt]->GetBinContent(PulseInt_quad[iquad][ipmt]->GetXaxis()->FindBin(xpeaks[0])));
+		      Gauss2->SetParLimits(1, xpeaks[0]-3, xpeaks[0]+3);
+		      Gauss2->SetParLimits(2, 0.5, 10.);
+		      Gauss2->SetParLimits(3, 0., 500.);
+		      Gauss2->SetParLimits(4, xpeaks[1]-3, xpeaks[1]+3);
+		      Gauss2->SetParLimits(5, 0.5, 10.);
+		      fFullShow ? PulseInt_quad[iquad][ipmt]->Fit("Gauss2","RQ") : PulseInt_quad[iquad][ipmt]->Fit("Gauss2","RQN");
+		      if (fFullShow) PulseInt_quad[iquad][ipmt]->GetXaxis()->SetRangeUser(0,40);*/
+		}
+	    }
 		  
 	  //Obtain the conversion from ADC to NPE by taking the average of the SPE means
 	  Double_t xscale = 0.0;
 	  Double_t num_peaks = 0.0;
+	  Double_t WeightAvgSum1 = 0.0;
+	  Double_t WeightAvgSum2 = 0.0;
 	  for (Int_t i=0; i<3; i++)
 	    {
-	      if (mean[i] == 0.0) continue;
+	      //if (mean[i] == 0.0) continue;
 	      xscale += mean[i];
-	      num_peaks += 1.0;	 
-
-	       }          
-        	 
+	      num_peaks += 1.0;
+	      if (GoodPlot[i] == kFALSE) continue;                     // Take weighted avg 26/8/19 SK
+	      WeightAvgSum1 += mean[i]/(mean_err[i]*mean_err[i]);               
+	      WeightAvgSum2 += 1/(mean_err[i]*mean_err[i]);
+	    }
+	  cout << "Weighted Average = " << WeightAvgSum1/WeightAvgSum2 << " pm " << 1/TMath::Sqrt(WeightAvgSum2) << endl;
 	  if (num_peaks != 0.0) xscale = xscale/num_peaks;
 
 	  //Perform check if the statistics were too low to get a good estimate of the SPE mean
@@ -692,7 +743,7 @@ TCanvas *pmt1_2;
 	      Gauss1->SetRange(xpeaks[0]-3, xpeaks[0]+3);
 	      Gauss1->SetParameter(1, xpeaks[0]);
 	      Gauss1->SetParameter(2, 10.);
-	      Gauss1->SetParLimits(0, 0., 10000.);
+	      Gauss1->SetParLimits(0, 0., 3000.);
 	      Gauss1->SetParLimits(1, xpeaks[0]-3, xpeaks[0]+3);
 	      Gauss1->SetParLimits(2, 0.5, 20.0);
 	      PulseInt[ipmt]->GetXaxis()->SetRangeUser(0,200);
@@ -714,7 +765,7 @@ TCanvas *pmt1_2;
 	      Double_t x_scaled = x/xscale;
 	      Int_t bin_scaled = fscaled[ipmt]->GetXaxis()->FindBin(x_scaled); 
 	      fscaled[ipmt]->SetBinContent(bin_scaled,y);
-	      }
+	    }
 
 	  //Normalize the histogram for ease of fitting
 	  fscaled[ipmt]->Scale(1.0/fscaled[ipmt]->Integral(), "width");
@@ -786,7 +837,7 @@ TCanvas *pmt1_2;
 	      Double_t x_scaled = x/xscale_mk2;
 	      Int_t bin_scaled = fscaled_mk2[ipmt]->GetXaxis()->FindBin(x_scaled); 
 	      fscaled_mk2[ipmt]->SetBinContent(bin_scaled,y);
-	       }
+	    }
 	 
 	  //Normalize the histogram for ease of fitting
 	  fscaled_mk2[ipmt]->Scale(1.0/fscaled_mk2[ipmt]->Integral(), "width");
@@ -800,7 +851,7 @@ TCanvas *pmt1_2;
 	  fFullShow ? fscaled_mk2[ipmt]->Fit("Poisson","RQ"):fscaled_mk2[ipmt]->Fit("Poisson","RQN");
 
 	  //Make and fill histogram with the background removed
-	    fscaled_mk2_nobackground[ipmt] = new TH1F(Form("fscaled_mk2_nobackground_pmt%d", ipmt+1), Form("NPE spectra background removed for PMT%d; NPE; Normalized Counts",ipmt+1), 400, 0, 40);
+	  fscaled_mk2_nobackground[ipmt] = new TH1F(Form("fscaled_mk2_nobackground_pmt%d", ipmt+1), Form("NPE spectra background removed for PMT%d; NPE; Normalized Counts",ipmt+1), 400, 0, 40);
 
 	  for (Int_t ibin=0; ibin<nbins; ibin++)
 	    {
@@ -843,9 +894,9 @@ TCanvas *pmt1_2;
 	} // This brance marks the end of the quadrant cut strategy
 
                
-         //Begin the TrackFired cut calibration
+      //Begin the TrackFired cut calibration
 
-        if (fTrack)
+      if (fTrack)
 	{
 	  //TSpectrum class is used to find the SPE peak using the search method
 	  TSpectrum *s = new TSpectrum(2); 
@@ -879,7 +930,7 @@ TCanvas *pmt1_2;
 
 	      //Store the mean of the SPE in the mean array provided it is not zero, passes a loose statistical cut, and is above a minimum channel number
 	      if (xpeaks[0] != 0.0 && PulseInt_quad[iquad][ipmt]->GetBinContent(PulseInt_quad[iquad][ipmt]->GetXaxis()->FindBin(xpeaks[0])) > 10 && ipmt != iquad) mean[iquad] = Gauss1->GetParameter(1);
-	     } 
+	    } 
 	  
 	  Double_t xscale = 0.0;
 	  Double_t num_peaks = 0.0;
@@ -962,7 +1013,7 @@ TCanvas *pmt1_2;
 
       	} //This brace marks the end of TracksFired strategy
 
-         //Begin investigation of Poisson-like behaviour of calibrated spectra..only valid if particle ID is applied
+      //Begin investigation of Poisson-like behaviour of calibrated spectra..only valid if particle ID is applied
       if (fCut)
 	{
 	  fscaled_combined[ipmt] = new TH1F(Form("fscaled_combined%d",ipmt+1), Form("Scaled ADC spectra for PMT %d", ipmt+1), 300, 0, 20);
@@ -998,7 +1049,7 @@ TCanvas *pmt1_2;
 
     } // This brace marks the end of the loop over PMTs
      
-     //Combine each PMT into one final histogram
+  //Combine each PMT into one final histogram
 
   if (fCut)
     {
@@ -1043,7 +1094,7 @@ TCanvas *pmt1_2;
 
   //Start the process of writing the calibration information to file
  
-   ofstream calibration;
+  ofstream calibration;
   calibration.open("calibration_temp.txt", ios::out);
 
   if (!calibration.is_open()) cout << "Problem saving calibration constants, may have to update constants manually!" << endl;
@@ -1057,6 +1108,6 @@ TCanvas *pmt1_2;
 	}
 
       calibration.close();
-      }
+    }
   
 }
