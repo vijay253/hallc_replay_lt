@@ -4,7 +4,7 @@
 #include <string>
 #include <stdio.h>
 
-void run_cal(Int_t RunNumber = 0, Int_t NumEvents = 0, Int_t coin = 0)
+void run_cal(Int_t RunNumber = 0, Int_t NumEvents = 0, Int_t coin = 0, TString calib_raw = "")
 {
   if (RunNumber == 0)
     {
@@ -23,11 +23,11 @@ void run_cal(Int_t RunNumber = 0, Int_t NumEvents = 0, Int_t coin = 0)
       cin >> coin;
     }
 
-  cin.ignore(numeric_limits<streamsize>::max(), '\n');
+  //cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
-  string calib_raw;
-  cout << "\nEnter options for calibration  (enter NA to skip): ";
-  getline(std::cin, calib_raw);
+  // string calib_raw;
+  // cout << "\nEnter options for calibration  (enter NA to skip): ";
+  // getline(std::cin, calib_raw);
   TString calib_option = calib_raw;
   
   /*  string eff_raw;

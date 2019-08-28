@@ -69,6 +69,7 @@ class calibration : public TSelector {
    
   // Declaration of canvases used in fitting/analysis
   TCanvas *quad_cuts_ipmt;
+  TCanvas *quad_cuts[4];
   TCanvas *low_stats_ipmt;
   TCanvas *background_ipmt;
   TCanvas *final_spectra_ipmt;
