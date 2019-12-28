@@ -355,7 +355,7 @@ Bool_t calibration::Process(Long64_t entry)
 	    }   
 	  //Marks end of pion selection condition
 		      
-	  //For quadrant cut strategy with no particle ID cut
+	   //For quadrant cut strategy with no particle ID cut
 	  if (!fTrack && !fCut)
 	    {
 	      //Fill histogram of the full PulseInt spectra for each PMT
@@ -380,7 +380,7 @@ Bool_t calibration::Process(Long64_t entry)
 	      if (y_pos < 4.6 && x_pos < 9.4) fPulseInt_quad[3][ipmt]->Fill(P_hgcer_goodAdcPulseInt[ipmt]);
 	    }//Marks end of no particle ID strategy 
 	  	  
-	  //For TracksFired cut strategy with no particle ID cut
+	    //For TracksFired cut strategy with no particle ID cut
 	  if (fTrack && !fCut)
 	    {
 	      //Fill histogram of the full PulseInt spectra for each PMT
@@ -427,7 +427,7 @@ Bool_t calibration::Process(Long64_t entry)
 		      if (P_hgcer_numTracksFired[iregion] != 0.0) fPulseInt_quad[iregion][ipmt]->Fill(P_hgcer_goodAdcPulseInt[ipmt]);
 		    }
 		}
-	    }//Marks end of tracksfired with electrons
+		}//Marks end of tracksfired with electrons
 
 	  //For TracksFired cut strategy selecting pions
 	  if (fTrack && fCut && fPions)
@@ -463,7 +463,7 @@ Bool_t calibration::Process(Long64_t entry)
 		      if (P_hgcer_numTracksFired[iregion] != 0.0) fPulseInt_quad[iregion][ipmt]->Fill(P_hgcer_goodAdcPulseInt[ipmt]);
 		    }
 		}
-	    }//Marks end of tracksfired with electrons
+		}//Marks end of tracksfired with electrons
 	  
 	}//Marks end of loop over PMTs
 
@@ -612,13 +612,15 @@ void calibration::Terminate()
 
   //Two more arrays are used to store the estimates for the calibration constants and another two to store goodness of calibration
   Double_t calibration_mk1[4], calibration_mk1Err[4], calibration_mk2[4], calibration_mk2Err[4], pmt_calib[4], pmt_calib_mk2[4];
+
   TPaveText *GoodFitText = new TPaveText (0.65, 0.15, 0.85, 0.2, "NDC");
   GoodFitText->SetTextColor(kGreen);
   GoodFitText->AddText("Good fit");
   TPaveText *BadFitText = new TPaveText (0.65, 0.15, 0.85, 0.2, "NDC");  
   BadFitText->SetTextColor(kRed);
   BadFitText->AddText("Bad fit");
-  TString outputpdf = "PMT_Fits.pdf";                         //Name of the pdf file
+
+  TString outputpdf = "PMT_Fits.pdf";                        //Name of the pdf file
   //Array to hold the Poisson character of the calibrations
   Double_t Pois_Chi[2];
   Pois_Chi[0] = 0.0, Pois_Chi[1] = 0.0;
@@ -669,7 +671,7 @@ void calibration::Terminate()
 		  // if (xpeaks[1] < xpeaks[0]) xpeaks[1] = xpeaks[0];
 		  
 		  //Use the peak to fit the SPE with a Gaussian to determine the mean
-		  PulseInt_quad[iquad][ipmt]->Draw("E");
+		  if(fFullShow) PulseInt_quad[iquad][ipmt]->Draw("E");
 		  Gauss2->SetRange(0,17);
 		  Gauss2->SetParameter(1, xpeaks[0]);
 		  Gauss2->SetParameter(2, 5.0);
@@ -682,7 +684,7 @@ void calibration::Terminate()
 		  Gauss2->SetParLimits(4, xpeaks[1]-1, xpeaks[1]+1);
 		  Gauss2->SetParLimits(5, 0.5, 10.);
 		  fFullShow ? PulseInt_quad[iquad][ipmt]->Fit("Gauss2","RQ") : PulseInt_quad[iquad][ipmt]->Fit("Gauss2","RQN");
-		  if (fFullShow) PulseInt_quad[iquad][ipmt]->GetXaxis()->SetRangeUser(0,17);
+		  if (fFullShow) PulseInt_quad[iquad][ipmt]->GetXaxis()->SetRangeUser(0,30);
 		  
 		  //if (xpeaks[0] > 2.0 && PulseInt_quad[iquad][ipmt]->GetBinContent(PulseInt_quad[iquad][ipmt]->GetXaxis()->FindBin(xpeaks[0])) > 90) mean[ipad-1] = Gauss2->GetParameter(1); 
 		  //if (xpeaks[0] > 2.0 && PulseInt_quad[iquad][ipmt]->GetBinContent(PulseInt_quad[iquad][ipmt]->GetXaxis()->FindBin(xpeaks[0])) > 90) SD[ipad-1] = Gauss2->GetParameter(2); 
@@ -691,23 +693,24 @@ void calibration::Terminate()
 		  SD[ipad-1] = Gauss2->GetParameter(2);
 		  RChi2[ipad-1] = Gauss2->GetChisquare()/Gauss2->GetNDF();
 		  mean_err[ipad-1] = Gauss2->GetParError(1);
-		  if(RChi2[ipad-1] < 0.5 || RChi2[ipad-1] > 10){
+		  
+		  if  (RChi2[ipad-1] < 0.5 || RChi2[ipad-1] > 10) {
 		    GoodFit[ipad-1] = kFALSE; // Set Boolean of whether fit is good or not here
 		    BadFitText->DrawClone("same");
 		    cout << "BAD FIT RCHI2 "  << RChi2[ipad-1] << endl;
 		  } 
-		  else{
+		  else if  (RChi2[ipad-1] > 0.5 && RChi2[ipad-1] < 10) {
 		    GoodFit[ipad-1] = kTRUE;
 		    GoodFitText->DrawClone("same");
 		    cout << "GOOD FIT RCHI2 "  << RChi2[ipad-1] << endl;
 		  }
 		  
-		  cout << xpeaks[0] <<endl;
-		  cout<< " Amplitude " << PulseInt_quad[iquad][ipmt]->GetBinContent(PulseInt_quad[iquad][ipmt]->GetXaxis()->FindBin(xpeaks[0])) << endl;
-		  cout<< " SD " <<SD[ipad-1]<<endl;
-                  cout<<" mean "<<mean[ipad-1]<<endl;  
-		  cout<<"  error       "<<mean_err[ipad-1]<<endl;
-		  cout << " Chi2/DoF " << RChi2[ipad-1] << endl;
+		  // cout << xpeaks[0] <<endl;
+		  // cout<< " Amplitude " << PulseInt_quad[iquad][ipmt]->GetBinContent(PulseInt_quad[iquad][ipmt]->GetXaxis()->FindBin(xpeaks[0])) << endl;
+		  // cout<< " SD " <<SD[ipad-1]<<endl;
+		  // cout<<" mean "<<mean[ipad-1]<<endl;  
+		  // cout<<"  error       "<<mean_err[ipad-1]<<endl;
+		  // cout << " Chi2/DoF " << RChi2[ipad-1] << endl;
 		  
 		  ipad++;
 
@@ -739,7 +742,7 @@ void calibration::Terminate()
 	      //if (mean[i] == 0.0) continue;
 	      //xscale += mean[i]; // Old version of getting xscale which was simple mean of means
 	      //num_peaks += 1.0;
-	      if (GoodFit[i] == kFALSE) continue;                     // Take weighted avg 26/8/19 SK
+	      // if (GoodFit[i] == kFALSE) continue;                     // Take weighted avg 26/8/19 SK
 	      WeightAvgSum1 += mean[i]/(mean_err[i]*mean_err[i]);               
 	      WeightAvgSum2 += 1/(mean_err[i]*mean_err[i]);
 	    }
@@ -749,7 +752,7 @@ void calibration::Terminate()
 	  xscaleErr = 1/TMath::Sqrt(WeightAvgSum2);
 
 	  //Perform check if the statistics were too low to get a good estimate of the SPE mean
-	  if (xscale < 1.0)
+	   if (xscale < 1.0)
 	    {
 	      //Repeat the exact same procedure for the SPE of each quadrant, except now its for the full PMT spectra
 	      if(fFullShow) low_stats_ipmt = new TCanvas(Form("low_stats_%d",ipmt),Form("Low stats analysis for PMT%d",ipmt+1));
@@ -769,7 +772,7 @@ void calibration::Terminate()
 	      fFullShow ? PulseInt[ipmt]->Fit("Gauss1","RQ") : PulseInt[ipmt]->Fit("Gauss1","RQN");
 	      xscale = Gauss1->GetParameter(1);
 	      xscaleErr = Gauss1->GetParError(1);
-	    }	  
+	      }	  
 
 
 	  //Scale full ADC spectra according to the mean of the SPE. This requires filling a new histogram with the same number of bins but scaled min/max
@@ -801,7 +804,7 @@ void calibration::Terminate()
 	  fFullShow ? fscaled[ipmt]->Fit("Poisson","RQ") : fscaled[ipmt]->Fit("Poisson","RQN");
 
 	  //Make and fill histogram with the background removed
-	  fscaled_nobackground[ipmt] = new TH1F(Form("fscaled_nobackground_pmt%d", ipmt+1), Form("NPE spectra background removed for PMT%d; NPE; Normalized Counts",ipmt+1), 200, 0, 21);
+	    fscaled_nobackground[ipmt] = new TH1F(Form("fscaled_nobackground_pmt%d", ipmt+1), Form("NPE spectra background removed for PMT%d; NPE; Normalized Counts",ipmt+1), 200, 0, 21);
 
 	  for (Int_t ibin=1; ibin<nbins; ibin++)
 	    {
@@ -845,7 +848,7 @@ void calibration::Terminate()
 	  calibration_mk1Err[ipmt] = xscaleErr;
 	  pmt_calib[ipmt] = abs(1.0 - Gauss3->GetParameter(1));
       
-	  //Initial calibration constant has been obtained. Now I multiply it by the slope of the spacing of the NPE (should be approx. 1) for a second estimate
+	   //Initial calibration constant has been obtained. Now I multiply it by the slope of the spacing of the NPE (should be approx. 1) for a second estimate
 
 	  Double_t xscale_mk2 = xscale * Gauss3->GetParameter(1);
 	  Double_t xscale_mk2Err = Sqrt(Power(xscaleErr*Gauss3->GetParameter(1),2) +  Power(xscale*Gauss3->GetParError(1),2)); 
@@ -915,10 +918,10 @@ void calibration::Terminate()
 	  calibration_mk2[ipmt] = xscale_mk2;
 	  calibration_mk2Err[ipmt] = xscale_mk2Err;
 	  pmt_calib_mk2[ipmt] = abs(1.0 - Gauss3->GetParameter(1));
-	} // This brace marks the end of the quadrant cut strategy
+	    } // This brace marks the end of the quadrant cut strategy
                
 
-      //Begin the TrackFired cut calibration
+       //Begin the TrackFired cut calibration
       if (fTrack)
 	{
 	  //TSpectrum class is used to find the SPE peak using the search method
@@ -963,7 +966,7 @@ void calibration::Terminate()
 	  for (Int_t i=0; i<3; i++)
 	    {
 	      // Need to define Boolean for this loop, earlier it's based on X2 range of fit, do similar here. Case not used for now SK 27/8/19
-	      if (GoodFit[i] == kFALSE) continue;                     // Take weighted avg 26/8/19 SK
+	      //if (GoodFit[i] == kFALSE) continue;                     // Take weighted avg 26/8/19 SK
 	      WeightAvgSum1 += mean[i]/(mean_err[i]*mean_err[i]);               
 	      WeightAvgSum2 += 1/(mean_err[i]*mean_err[i]);
 	    }
@@ -1081,7 +1084,7 @@ void calibration::Terminate()
 
               // Write to PDF file
 
-      if (ipmt == 0){
+      /*   if (ipmt == 0){
 	quad_cuts[ipmt]->Print(outputpdf + "[");
 	quad_cuts[ipmt]->Print(outputpdf);
       }
@@ -1094,7 +1097,7 @@ void calibration::Terminate()
        if (ipmt == 3){
 	quad_cuts[ipmt]->Print(outputpdf);
 	quad_cuts[0]->Print(outputpdf + "]");
-      }   
+	} */  
      
     }   // Combine each PMT into one final histogram
 
@@ -1124,7 +1127,7 @@ void calibration::Terminate()
       if (fFullShow) scaled_total->cd(2);
       fFullShow ? fscaled_total_mk2->Fit("Poisson","RQ") : fscaled_total_mk2->Fit("Poisson","RQN");
       Pois_Chi[1] = Poisson->GetChisquare();
-    } 
+      } 
 
   printf("\n\n"); 
 

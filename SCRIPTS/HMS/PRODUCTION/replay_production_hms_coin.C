@@ -35,8 +35,9 @@ void replay_production_hms_coin(Int_t RunNumber=0, Int_t MaxEvent=0, Int_t First
   // Load params for HMS trigger configuration
   gHcParms->Load("PARAM/TRIG/thms.param");
   // Load fadc debug parameters
-  gHcParms->Load("PARAM/HMS/GEN/h_fadc_debug.param");
+  //gHcParms->Load("PARAM/HMS/GEN/h_fadc_debug.param");  Old one
 
+  gHcParms->Load("PARAM/TRIG/tcoin.param");
   // Load the Hall C detector map
   gHcDetectorMap = new THcDetectorMap();
   gHcDetectorMap->Load("MAPS/HMS/DETEC/STACK/hms_stack.map");

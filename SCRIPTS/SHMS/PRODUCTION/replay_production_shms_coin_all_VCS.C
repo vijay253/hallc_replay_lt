@@ -1,4 +1,4 @@
-void SHMSHodo_Calib_Coin_Pt2 (Int_t RunNumber = 0, Int_t MaxEvent = 0) {
+void replay_production_shms_coin_all_VCS (Int_t RunNumber = 0, Int_t MaxEvent = 0) {
 
   // Get RunNumber and MaxEvent if not provided.
   if(RunNumber == 0) {
@@ -23,16 +23,16 @@ void SHMSHodo_Calib_Coin_Pt2 (Int_t RunNumber = 0, Int_t MaxEvent = 0) {
   pathList.push_back("./raw/../raw.copiedtotape");
   pathList.push_back("./cache");
 
-  const char* ROOTFileNamePattern = "ROOTfilesHodoCalib/SHMS_Hodo_Calib_Pt2_%d_%d.root";
-
+  const char* ROOTFileNamePattern = "ROOTfiles/shms_coin_replay_production_all_%d_%d.root";
+  
   // Load global parameters
   gHcParms->Define("gen_run_number", "Run Number", RunNumber);
-  gHcParms->AddString("g_ctp_database_filename", Form("DBASE/COIN/SHMS_HodoCalib/standard_%d.database", RunNumber));
+  gHcParms->AddString("g_ctp_database_filename", "DBASE/COIN/standard.database");
   gHcParms->Load(gHcParms->GetString("g_ctp_database_filename"), RunNumber);
   gHcParms->Load(gHcParms->GetString("g_ctp_parm_filename"));
   gHcParms->Load(gHcParms->GetString("g_ctp_kinematics_filename"), RunNumber);
   // Load parameters for SHMS trigger configuration
-  gHcParms->Load("PARAM/TRIG/tshms.param");
+  gHcParms->Load("PARAM/TRIG/tshms_VCS.param");
   // Load fadc debug parameters
   gHcParms->Load("PARAM/SHMS/GEN/p_fadc_debug.param");
 
@@ -50,9 +50,7 @@ void SHMSHodo_Calib_Coin_Pt2 (Int_t RunNumber = 0, Int_t MaxEvent = 0) {
   SHMS->AddEvtType(6);
   SHMS->AddEvtType(7);
   gHaApps->Add(SHMS);
-  // Add Noble Gas Cherenkov to SHMS apparatus
-  //THcCherenkov* ngcer = new THcCherenkov("ngcer", "Noble Gas Cherenkov");
-  //SHMS->AddDetector(ngcer);
+
   // Add drift chambers to SHMS apparatus
   THcDC* dc = new THcDC("dc", "Drift Chambers");
   SHMS->AddDetector(dc);
@@ -157,15 +155,15 @@ void SHMSHodo_Calib_Coin_Pt2 (Int_t RunNumber = 0, Int_t MaxEvent = 0) {
   // Define output ROOT file
   analyzer->SetOutFile(ROOTFileName.Data());
   // Define DEF-file
-  analyzer->SetOdefFile("DEF-files/SHMS/PRODUCTION/pstackana_production_all.def");
+  analyzer->SetOdefFile("DEF-files/SHMS/PRODUCTION/pstackana_production_all_VCS.def");
   // Define cuts file
   analyzer->SetCutFile("DEF-files/SHMS/PRODUCTION/CUTS/pstackana_production_cuts.def");  // optional
   // File to record accounting information for cuts
-  //analyzer->SetSummaryFile(Form("REPORT_OUTPUT/SHMS/PRODUCTION/summary_coin_all_production_%d_%d.report", RunNumber, MaxEvent));  // optional
+  analyzer->SetSummaryFile(Form("REPORT_OUTPUT/SHMS/PRODUCTION/summary_coin_all_production_%d_%d.report", RunNumber, MaxEvent));  // optional
   // Start the actual analysis.
   analyzer->Process(run);
   // Create report file from template
-  //analyzer->PrintReport("TEMPLATES/SHMS/PRODUCTION/pstackana_production.template",
-  //			Form("REPORT_OUTPUT/SHMS/PRODUCTION/replay_shms_coin_all_production_%d_%d.report", RunNumber, MaxEvent));  // optional
+  analyzer->PrintReport("TEMPLATES/SHMS/PRODUCTION/pstackana_production.template",
+  			Form("REPORT_OUTPUT/SHMS/PRODUCTION/replay_shms_coin_all_production_%d_%d.report", RunNumber, MaxEvent));  // optional
 
 }

@@ -1,4 +1,4 @@
-void FullReplay (Int_t RunNumber = 0, Int_t MaxEvent = 0) {
+void replay_production_coin_Lumi (Int_t RunNumber = 0, Int_t MaxEvent = 0) {
 
   // Get RunNumber and MaxEvent if not provided.
   if(RunNumber == 0) {
@@ -20,16 +20,12 @@ void FullReplay (Int_t RunNumber = 0, Int_t MaxEvent = 0) {
   vector<TString> pathList;
   pathList.push_back(".");
   pathList.push_back("./raw");
-  pathList.push_back("./raw1");
-  pathList.push_back("./raw2");
-  pathList.push_back("./raw3");
-  pathList.push_back("./raw4");
+  pathList.push_back("./raw_volatile");
   pathList.push_back("./raw/../raw.copiedtotape");
   pathList.push_back("./cache");
 
   //const char* RunFileNamePattern = "raw/coin_all_%05d.dat";
-  const char* ROOTFileNamePattern = "ROOTfiles/coin_replay_Full_%d_%d.root";
-
+  const char* ROOTFileNamePattern = "ROOTfilesPion/PionLT_coin_replay_production_%d_%d.root";
   // Load global parameters
   gHcParms->Define("gen_run_number", "Run Number", RunNumber);
   gHcParms->AddString("g_ctp_database_filename", "DBASE/COIN/standard.database");
@@ -41,16 +37,14 @@ void FullReplay (Int_t RunNumber = 0, Int_t MaxEvent = 0) {
   // Load fadc debug parameters
   gHcParms->Load("PARAM/HMS/GEN/h_fadc_debug.param");
   gHcParms->Load("PARAM/SHMS/GEN/p_fadc_debug.param");
-
-  // const char* CurrentFileNamePattern = "low_curr_bcm/bcmcurrent_%d.param";
-  // gHcParms->Load(Form(CurrentFileNamePattern, RunNumber));
+  // Load params for BCM
+  const char* CurrentFileNamePattern = "PARAM/HMS/BCM/CALIB/bcmcurrent_%d.param";
+  gHcParms->Load(Form(CurrentFileNamePattern, RunNumber));
 
   // Load the Hall C detector map
   gHcDetectorMap = new THcDetectorMap();
   gHcDetectorMap->Load("MAPS/COIN/DETEC/coin.map");
 
-     // Dec data
-   gHaApps->Add(new Podd::DecData("D","Decoder raw data"));
   //=:=:=:=
   // SHMS 
   //=:=:=:=
@@ -79,15 +73,12 @@ void FullReplay (Int_t RunNumber = 0, Int_t MaxEvent = 0) {
   THcShower* pcal = new THcShower("cal", "Calorimeter");
   SHMS->AddDetector(pcal);
 
-  // THcBCMCurrent* hbc = new THcBCMCurrent("H.bcm", "BCM current check");
-  // gHaPhysics->Add(hbc);
-
   // Add rastered beam apparatus
   THaApparatus* pbeam = new THcRasteredBeam("P.rb", "Rastered Beamline");
   gHaApps->Add(pbeam);
   // Add physics modules
   // Calculate reaction point
-  THcReactionPoint* prp = new THcReactionPoint("P.react", "SHMS reaction point", "P", "P.rb");
+  THaReactionPoint* prp = new THaReactionPoint("P.react", "SHMS reaction point", "P", "P.rb");
   gHaPhysics->Add(prp);
   // Calculate extended target corrections
   THcExtTarCor* pext = new THcExtTarCor("P.extcor", "HMS extended target corrections", "P", "P.react");
@@ -132,10 +123,6 @@ void FullReplay (Int_t RunNumber = 0, Int_t MaxEvent = 0) {
   // Add Cherenkov to HMS apparatus
   THcCherenkov* hcer = new THcCherenkov("cer", "Heavy Gas Cherenkov");
   HMS->AddDetector(hcer);
-  // Add Aerogel Cherenkov to HMS apparatus
-  // THcAerogel* haero = new THcAerogel("aero", "Aerogel");
-  // HMS->AddDetector(haero);
-  // Add calorimeter to HMS apparatus
   THcShower* hcal = new THcShower("cal", "Calorimeter");
   HMS->AddDetector(hcal);
 
@@ -144,7 +131,7 @@ void FullReplay (Int_t RunNumber = 0, Int_t MaxEvent = 0) {
   gHaApps->Add(hbeam);  
   // Add physics modules
   // Calculate reaction point
-  THcReactionPoint* hrp = new THcReactionPoint("H.react", "HMS reaction point", "H", "H.rb");
+  THaReactionPoint* hrp = new THaReactionPoint("H.react", "HMS reaction point", "H", "H.rb");
   gHaPhysics->Add(hrp);
   // Calculate extended target corrections
   THcExtTarCor* hext = new THcExtTarCor("H.extcor", "HMS extended target corrections", "H", "H.react");
@@ -155,6 +142,9 @@ void FullReplay (Int_t RunNumber = 0, Int_t MaxEvent = 0) {
   // Calculate the hodoscope efficiencies
   THcHodoEff* heff = new THcHodoEff("hhodeff", "HMS hodo efficiency", "H.hod");
   gHaPhysics->Add(heff);
+  // Add BCM Current check
+  THcBCMCurrent* hbc = new THcBCMCurrent("H.bcm", "BCM current check");
+  gHaPhysics->Add(hbc);
 
   // Add event handler for scaler events
   THcScalerEvtHandler *hscaler = new THcScalerEvtHandler("H", "Hall C scaler event type 4");  
@@ -172,13 +162,17 @@ void FullReplay (Int_t RunNumber = 0, Int_t MaxEvent = 0) {
   // Kinematics Modules
   //=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=
 
-  // Add Physics Module to calculate primary (scattered electrons) beam kinematics
+  // Add Physics Module to calculate primary (scattered electrons) beam kinematics 
   THcPrimaryKine* hkin_primary = new THcPrimaryKine("H.kin.primary", "HMS Single Arm Kinematics", "H", "H.rb");
+  THcPrimaryKine* pkin_primary = new THcPrimaryKine("P.kin.primary", "SHMS Single Arm Kinematics", "P", "P.rb");
   gHaPhysics->Add(hkin_primary);
-  // Add Physics Module to calculate secondary (scattered hadrons) beam kinematics
+  gHaPhysics->Add(pkin_primary);
+ // Add Physics Module to calculate secondary (scattered hadrons) beam kinematics
+  THcSecondaryKine* hkin_secondary = new THcSecondaryKine("H.kin.secondary", "HMS Single Arm Kinematics", "H", "P.kin.primary");
   THcSecondaryKine* pkin_secondary = new THcSecondaryKine("P.kin.secondary", "SHMS Single Arm Kinematics", "P", "H.kin.primary");
+  gHaPhysics->Add(hkin_secondary);
   gHaPhysics->Add(pkin_secondary);
-  
+
   //=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=
   // Global Objects & Event Handlers
   //=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=
@@ -192,8 +186,10 @@ void FullReplay (Int_t RunNumber = 0, Int_t MaxEvent = 0) {
   coin->SetEvtType(1);
   coin->AddEvtType(2);
   TRG->AddDetector(coin); 
+
+  // Add helicity detector to trigger apparatus
   THcHelicity* helicity = new THcHelicity("helicity","Helicity Detector");
-  TRG->AddDetector(helicity); 
+  TRG->AddDetector(helicity);
   
   //Add coin physics module THcCoinTime::THcCoinTime (const char *name, const char* description, const char* hadArmName, 
   // const char* elecArmName, const char* coinname) :
@@ -246,15 +242,14 @@ void FullReplay (Int_t RunNumber = 0, Int_t MaxEvent = 0) {
   // Define output ROOT file
   analyzer->SetOutFile(ROOTFileName.Data());
   // Define DEF-file+
-  analyzer->SetOdefFile("DEF-files/COIN/PRODUCTION/coin_production_hElec_pProt.def");
+  analyzer->SetOdefFile("UTIL_PROTON/DEF-files/luminosity_coin_production.def");
   // Define cuts file
-  analyzer->SetCutFile("DEF-files/COIN/PRODUCTION/CUTS/coin_production_cuts.def");  // optional
+  analyzer->SetCutFile("UTIL_PROTON/DEF-files/luminosity_coin_production_cuts.def");  // optional
   // File to record accounting information for cuts
-  //analyzer->SetSummaryFile(Form("REPORT_OUTPUT/COIN/PRODUCTION/summary_production_%d_%d.report", RunNumber, MaxEvent));  // optional
+  analyzer->SetSummaryFile(Form("UTIL_PROTON/REPORT_OUTPUT/COIN/PRODUCTION/summary_production_%d_%d.report", RunNumber, MaxEvent));  // optional
   // Start the actual analysis.
   analyzer->Process(run);
-  // Create report file from template
-  // analyzer->PrintReport("TEMPLATES/COIN/PRODUCTION/coin_production.template",
-  //Form("REPORT_OUTPUT/COIN/PRODUCTION/replay_coin_production_%d_%d.report", RunNumber, MaxEvent));  // optional
-
+  // Create report file from template	       
+  analyzer->PrintReport("UTIL_PROTON/TEMPLATES/COIN/coin_production.template", Form("UTIL_PROTON/REPORT_OUTPUT/COIN/PRODUCTION/PionLT_replay_coin_production_%d_%d.report", RunNumber, MaxEvent)); // optional}
+  
 }

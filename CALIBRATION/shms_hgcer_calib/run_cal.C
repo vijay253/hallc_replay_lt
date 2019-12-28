@@ -4,7 +4,7 @@
 #include <string>
 #include <stdio.h>
 
-void run_cal(Int_t RunNumber = 0, Int_t NumEvents = 0, Int_t coin = 0, TString calib_raw = "")
+void run_cal(Int_t RunNumber = 0, Int_t NumEvents = 0, Int_t coin = 0)
 {
   if (RunNumber == 0)
     {
@@ -23,11 +23,11 @@ void run_cal(Int_t RunNumber = 0, Int_t NumEvents = 0, Int_t coin = 0, TString c
       cin >> coin;
     }
 
-  //cin.ignore(numeric_limits<streamsize>::max(), '\n');
+  cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
-  // string calib_raw;
-  // cout << "\nEnter options for calibration  (enter NA to skip): ";
-  // getline(std::cin, calib_raw);
+  string calib_raw;
+  cout << "\nEnter options for calibration  (enter NA to skip): ";
+  getline(std::cin, calib_raw);
   TString calib_option = calib_raw;
   
   /*  string eff_raw;
@@ -39,8 +39,8 @@ void run_cal(Int_t RunNumber = 0, Int_t NumEvents = 0, Int_t coin = 0, TString c
   
   TChain ch("T");
   if (coin == 1){ch.Add(Form("ROOTfiles/shms_coin_replay_production_all_%d_%d.root",4780,-1));
-    ch.Add(Form("ROOTfiles/shms_coin_replay_production_all_%d_%d.root", 4781,-1));
-    ch.Add(Form("ROOTfiles/shms_coin_replay_production_all_%d_%d.root",4782,-1));
+    ch.Add(Form("ROOTfiles/shms_coin_replay_production_all_%d_%d.root", 4781,-1)); // There is no need for these to be form statements if you're feeding them a fixed variable
+    ch.Add(Form("ROOTfiles/shms_coin_replay_production_all_%d_%d.root",4782,-1));  // You can just add the specfifc 4/5 ROOTfiles you want SK 28/8/19
     ch.Add(Form("ROOTfiles/shms_coin_replay_production_all_%d_%d.root",4783,-1));
     ch.Add(Form("ROOTfiles/shms_coin_replay_production_all_%d_%d.root",4787,-1));}
   //	 ch.Add(Form("ROOTfiles/shms_coin_replay_production_all_%d_%d.root",4781,-1));
