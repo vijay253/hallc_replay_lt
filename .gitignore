@@ -14,6 +14,7 @@
 *.root*
 *_-1_0_-1
 *_0_-1
+Tmp*
 
 # Directories
 RAID
@@ -26,17 +27,23 @@ OUTPUT
 raw*
 raw.copiedtotape
 cache
-PARAM/HMS/HODO/Calibration
-PARAM/SHMS/HODO/Calibration
+#PARAM/HMS/HODO/Calibration
+#PARAM/SHMS/HODO/Calibration
 DBASE/COIN/HMS_HodoCalib
 DBASE/COIN/SHMS_HodoCalib
 DBASE/COIN/HMS_DCCalib
 DBASE/COIN/SHMS_DCCalib
-PARAM/HMS/DC/CALIB
-PARAM/SHMS/DC/CALIB
+#PARAM/HMS/DC/CALIB
+#PARAM/SHMS/DC/CALIB
 OUTPUT
 CALIBRATION/dc_calib/scripts/HMS_*
 CALIBRATION/dc_calib/scripts/SHMS_*
+PARAM/SHMS/DC/CALIB/Farm_Ouput/
+PARAM/HMS/DC/CALIB/Farm_Ouput/
+CALIBRATION/hms_cal_calib/Output/
+CALIBRATION/hms_cal_calib/Input/
+CALIBRATION/shms_cal_calib/Output/
+CALIBRATION/shms_cal_calib/Input/
 
 # Symbolic links
 hcana

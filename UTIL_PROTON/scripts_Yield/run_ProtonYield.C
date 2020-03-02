@@ -34,17 +34,12 @@ void run_ProtonYield(Int_t RunNumber = 0, Int_t MaxEvent = 0, Double_t threshold
     if( pscal<=0 ) return;
   }
 
-  ofstream myfile1;
-  myfile1.open ("pionyieldVar", fstream::app);
-  myfile1 << left << RunNumber << "   " << pscal << "   ";
-  myfile1.close();
-
   //Begin Scaler Efficiency Calculation
   if(Hostname.Contains("farm")){
-    rootFileNameString = Form("/group/c-kaonlt/USERS/${USER}/hallc_replay_lt/ROOTfilesPion/PionLT_coin_replay_production_%i_%i.root",RunNumber,MaxEvent);
+    rootFileNameString = Form("/group/c-kaonlt/USERS/${USER}/hallc_replay_lt/UTIL_PROTON/ROOTfilesProton/Proton_coin_replay_production_%i_%i.root",RunNumber,MaxEvent);
   }
-  else if (Hostname.Contains("cdaq")){
-    rootFileNameString = Form("/home/cdaq/hallc-online/hallc_replay_lt/ROOTfilesPion/PionLT_coin_replay_production_%i_%i.root",RunNumber,MaxEvent);
+  else if(Hostname.Contains("qcd")){
+    rootFileNameString = Form("/group/c-kaonlt/USERS/${USER}/hallc_replay_lt/UTIL_PROTON/ROOTfilesProton/Proton_coin_replay_production_%i_%i.root",RunNumber,MaxEvent);
   }
   else if (Hostname.Contains("phys.uregina.ca")){
     rootFileNameString = Form("/home/${USER}/work/JLab/hallc_replay_lt/UTIL_PROTON/ROOTfiles_KaonOL/KaonLT_coin_replay_production_%i_%i.root",RunNumber,MaxEvent);
