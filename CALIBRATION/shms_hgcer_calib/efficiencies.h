@@ -62,6 +62,7 @@ public :
    TTreeReaderValue<Double_t> P_cal_fly_earray           = {fReader, "P.cal.fly.earray"};
    TTreeReaderValue<Double_t> P_cal_pr_eplane            = {fReader, "P.cal.pr.eplane"};
    TTreeReaderValue<Double_t> P_cal_etotnorm             = {fReader, "P.cal.etotnorm"};
+   TTreeReaderValue<Double_t> P_gtr_p                    = {fReader, "P.gtr.p"};
    TTreeReaderArray<Double_t> P_gtr_dp                   = {fReader, "P.gtr.dp"};
    TTreeReaderArray<Double_t> P_tr_x                     = {fReader, "P.tr.x"};
    TTreeReaderArray<Double_t> P_tr_ph                    = {fReader, "P.tr.ph"};

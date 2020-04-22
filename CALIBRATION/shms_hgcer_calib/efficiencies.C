@@ -178,13 +178,13 @@ void efficiencies::SlaveBegin(TTree * /*tree*/)
   GetOutputList()->Add(fTiming_Full);
 
   //Histograms examining particle ID cuts
-  fFly_Pr_Full = new TH2F("Fly_Pr_Full", "Particle ID from calorimeter & preshower;Calorimeter (GeV);Pre-Shower (GeV)", 250, 0.0, 0.7, 250, 0.0, 0.8);
+  fFly_Pr_Full = new TH2F("Fly_Pr_Full", "Particle ID from calorimeter & preshower;Calorimeter (GeV);Pre-Shower (GeV)", 250, 0.0, 2, 250, 0.0, 0.8);
   GetOutputList()->Add(fFly_Pr_Full);
   
-  fFly_Pr_eCut = new TH2F("Fly_Pr_eCut", "calorimeter & preshower electrons;Calorimeter (GeV);Pre-Shower (GeV)", 250, 0.0, 0.7, 250, 0.0, 0.8);
+  fFly_Pr_eCut = new TH2F("Fly_Pr_eCut", "calorimeter & preshower electrons;Calorimeter (GeV);Pre-Shower (GeV)", 250, 0.0, 2, 250, 0.0, 0.8);
   GetOutputList()->Add(fFly_Pr_eCut);
 
-  fFly_Pr_piCut = new TH2F("Fly_Pr_piCut", "calorimeter & preshower pions;Calorimeter (GeV);Pre-Shower (GeV)", 250, 0.0, 0.7, 250, 0.0, 0.8);
+  fFly_Pr_piCut = new TH2F("Fly_Pr_piCut", "calorimeter & preshower pions;Calorimeter (GeV);Pre-Shower (GeV)", 250, 0.0, 2, 250, 0.0, 0.8);
   GetOutputList()->Add(fFly_Pr_piCut);
 
   printf("\n\n");
@@ -240,8 +240,10 @@ Bool_t efficiencies::Process(Long64_t entry)
 	  if (/*fNGC ? P_ngcer_numTracksFired[ipmt] == 0.0 :*/ P_hgcer_numTracksFired[ipmt] == 0.0) continue;
 
 	  //Begin particle identification using calorimeter and NGC
-	  Float_t central_p = 2.2;
-	  Float_t p = ((P_gtr_dp[itrack]/100.0)*central_p) + central_p;
+	  //  Float_t central_p = 2.2;
+	  // Float_t p = ((P_gtr_dp[itrack]/100.0)*central_p) + central_p;
+
+          Double_t p = *P_gtr_p;
 
 	  //Visualize what we have to cut with
 	  fFly_Pr_Full->Fill(*P_cal_fly_earray/p, *P_cal_pr_eplane/p);
@@ -254,8 +256,8 @@ Bool_t efficiencies::Process(Long64_t entry)
 	  Float_t esemimajor_axis = 0.28;
 	  Float_t esemiminor_axis = 0.04;*/
 	  Float_t eangle = 3.0*3.14159/4.0;
-	  Float_t ex_center = 0.490;
-	  Float_t ey_center = 0.400;
+	  Float_t ex_center = 1.0;
+	  Float_t ey_center = 0.45;
 	  Float_t esemimajor_axis = 0.38;
 	  Float_t esemiminor_axis = 0.05;
 	  if (pow((*P_cal_fly_earray/p - ex_center)*cos(eangle) + (*P_cal_pr_eplane/p - ey_center)*sin(eangle),2)/pow(esemimajor_axis,2) + 
