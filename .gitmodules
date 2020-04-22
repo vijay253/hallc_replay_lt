@@ -6,7 +6,6 @@
 [submodule "UTIL_KAONLT"]
 	path = UTIL_KAONLT
 	url = https://github.com/JeffersonLab/UTIL_KAONLT
-<<<<<<< HEAD
 	branch = master
 [submodule "UTIL_SIDIS"]
 	path = UTIL_SIDIS
@@ -16,6 +15,5 @@
 	path = UTIL_PION
 	url = https://github.com/JeffersonLab/UTIL_PION.git/
 	branch = master
-=======
 	branch = develop
->>>>>>> f79f7feebb1fa6ae38b78dae265e353f571d3ea2
+
