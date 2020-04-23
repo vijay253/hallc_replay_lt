@@ -118,13 +118,13 @@ void calibration::SlaveBegin(TTree * /*tree*/)
     }
 
 
-  fTim1 = new TH1F("Timing_PMT1", "ADC TDC Diff PMT1 ; Time (ns) ;Counts", 400, -40.0, 40.0);
+  fTim1 = new TH1F("Timing_PMT1", "ADC TDC Diff PMT1 ; Time (ns) ;Counts", 200, -10.0, 50.0);
   GetOutputList()->Add(fTim1);
-  fTim2 = new TH1F("Timing_PMT2", "ADC TDC Diff PMT2 ; Time (ns) ;Counts", 400, -40.0, 40.0);
+  fTim2 = new TH1F("Timing_PMT2", "ADC TDC Diff PMT2 ; Time (ns) ;Counts", 200, -10.0, 50.0);
   GetOutputList()->Add(fTim2);
-  fTim3 = new TH1F("Timing_PMT3", "ADC TDC Diff PMT3 ; Time (ns) ;Counts", 400, -40.0, 40.0);
+  fTim3 = new TH1F("Timing_PMT3", "ADC TDC Diff PMT3 ; Time (ns) ;Counts", 200, -10.0, 50.0);
   GetOutputList()->Add(fTim3);
-  fTim4 = new TH1F("Timing_PMT4", "ADC TDC Diff PMT4 ; Time (ns) ;Counts", 400, -40.0, 40.0);
+  fTim4 = new TH1F("Timing_PMT4", "ADC TDC Diff PMT4 ; Time (ns) ;Counts", 200, -10.0, 50.0);
   GetOutputList()->Add(fTim4);
 
   //Timing and Beta cut visualizations
@@ -137,13 +137,13 @@ void calibration::SlaveBegin(TTree * /*tree*/)
   // fTim = new TH1F("Tim", "Time ; Time ;Counts", 100, -50.0, 0.0);
   // GetOutputList()->Add(fTim);
 
-  fTiming_Cut = new TH1F("Timing_Cut", "Timing cut used for 'good' hits;Time (ns);Counts", 500, -50, 50);
+  fTiming_Cut = new TH1F("Timing_Cut", "Timing cut used for 'good' hits; Time (ns);Counts", 200, -10, 50);
   GetOutputList()->Add(fTiming_Cut);
 
   //fTiming_Cut = new TH2F("Timing_Cut", "Timing cut used for good hits ; Time (ns); Counts", 500, -50, 50, 500, 0.0, 200);
   //GetOutputList()->Add(fTiming_Cut);
 
-  fTiming_Full = new TH1F("Timing_Full", "Full timing information for events;Time (ns);Counts", 500, -50, 50);
+  fTiming_Full = new TH1F("Timing_Full", "Full timing information for events;Time (ns);Counts", 200, -10, 50);
   GetOutputList()->Add(fTiming_Full);
 
   // fTiming_Full = new TH2F("Timing_Full", "Full timing information for events ;Time (ns); Counts", 500, -30, 40, 500, 0.0, 200);
@@ -193,7 +193,7 @@ Bool_t calibration::Process(Long64_t entry)
   fpmts = fhgc_pmts;   //Note HGC & NGC have the same # of PMTS
 
   //Require only one good track reconstruction for the event                         
-  if (*Ndata_P_tr_beta != 1) return kTRUE;
+  //if (*Ndata_P_tr_beta != 1) return kTRUE;
   
   //Redundant, but useful if multiple tracks are eventually allowed
   for (Int_t itrack = 0; itrack < *Ndata_P_tr_beta; itrack++) 
@@ -207,11 +207,11 @@ Bool_t calibration::Process(Long64_t entry)
       for (Int_t ipmt = 0; ipmt < fpmts; ipmt++) 
 	{	  
 	  //Perform a loose timing cut    
-	  fTiming_Full->Fill(P_hgcer_goodAdcTdcDiffTime[ipmt]);       //doubt here
+	  fTiming_Full->Fill(P_hgcer_goodAdcTdcDiffTime[ipmt]);       
 
-	  if(ipmt ==0){
+	  /*  if(ipmt ==0){
 
-	    if(P_hgcer_goodAdcTdcDiffTime[ipmt] >13 || P_hgcer_goodAdcTdcDiffTime[ipmt] < 9) continue;
+	    if(P_hgcer_goodAdcTdcDiffTime[ipmt] >38 || P_hgcer_goodAdcTdcDiffTime[ipmt] < 32) continue;                      //13 9
 
 	    fTim1->Fill(P_hgcer_goodAdcTdcDiffTime[ipmt]);
 
@@ -219,32 +219,32 @@ Bool_t calibration::Process(Long64_t entry)
 
 	  if(ipmt ==1){
 
-	    if(P_hgcer_goodAdcTdcDiffTime[ipmt] >12 || P_hgcer_goodAdcTdcDiffTime[ipmt] < 7) continue;
+	    if(P_hgcer_goodAdcTdcDiffTime[ipmt] >38 || P_hgcer_goodAdcTdcDiffTime[ipmt] < 32) continue;                          //12 7
 
 	    fTim2->Fill(P_hgcer_goodAdcTdcDiffTime[ipmt]);
       
 	  }
 	  if(ipmt ==2){
 
-	    if(P_hgcer_goodAdcTdcDiffTime[ipmt] >12 || P_hgcer_goodAdcTdcDiffTime[ipmt] < 7) continue;
+	    if(P_hgcer_goodAdcTdcDiffTime[ipmt] >38 || P_hgcer_goodAdcTdcDiffTime[ipmt] < 32) continue;                           //12 7
 
 	    fTim3->Fill(P_hgcer_goodAdcTdcDiffTime[ipmt]);
       
 	  }
 	  if(ipmt ==3){
 
-	    if(P_hgcer_goodAdcTdcDiffTime[ipmt] >12 || P_hgcer_goodAdcTdcDiffTime[ipmt] < 8) continue;
-
+	    if(P_hgcer_goodAdcTdcDiffTime[ipmt] >38 || P_hgcer_goodAdcTdcDiffTime[ipmt] < 32) continue;                                  //12 8
+ 
 	    fTim4->Fill(P_hgcer_goodAdcTdcDiffTime[ipmt]);
       
-	  }
+	    }*/
 	  // cut modified by VK, 24/05/19
 
-	  // if(P_hgcer_goodAdcTdcDiffTime[ipmt] >20 || P_hgcer_goodAdcTdcDiffTime[ipmt] < 4) continue;
+	   if(P_hgcer_goodAdcTdcDiffTime[ipmt] >40 || P_hgcer_goodAdcTdcDiffTime[ipmt] < 30) continue;
 	   
-	  // fTiming_Cut->Fill(P_hgcer_xAtCer[ipmt],P_hgcer_yAtCer[ipmt]);
+	   //fTiming_Cut->Fill(P_hgcer_xAtCer[ipmt],P_hgcer_yAtCer[ipmt]);
 
-	  // fTiming_Cut->Fill(P_hgcer_goodAdcTdcDiffTime[ipmt]);
+	   fTiming_Cut->Fill(P_hgcer_goodAdcTdcDiffTime[ipmt]);
 	   
 	  //Cuts to remove entries corresponding to a PMT not registering a hit    
 	  if (P_hgcer_goodAdcPulseInt[ipmt] == 0.0) continue;
@@ -356,7 +356,7 @@ Bool_t calibration::Process(Long64_t entry)
 	  //Marks end of pion selection condition
 		      
 	   //For quadrant cut strategy with no particle ID cut
-	  if (!fTrack && !fCut)
+	   if (!fTrack && !fCut)
 	    {
 	      //Fill histogram of the full PulseInt spectra for each PMT
 	      fPulseInt[ipmt]->Fill(P_hgcer_goodAdcPulseInt[ipmt]);
@@ -378,7 +378,7 @@ Bool_t calibration::Process(Long64_t entry)
 
 	      //Condition for quadrant 4 mirror
 	      if (y_pos < 4.6 && x_pos < 9.4) fPulseInt_quad[3][ipmt]->Fill(P_hgcer_goodAdcPulseInt[ipmt]);
-	    }//Marks end of no particle ID strategy 
+	      }//Marks end of no particle ID strategy */
 	  	  
 	    //For TracksFired cut strategy with no particle ID cut
 	  if (fTrack && !fCut)
@@ -391,7 +391,7 @@ Bool_t calibration::Process(Long64_t entry)
 		{
 		  if (P_hgcer_numTracksFired[iregion] == (iregion + 1)) fPulseInt_quad[iregion][ipmt]->Fill(P_hgcer_goodAdcPulseInt[ipmt]);
 		}
-	    }//Marks end of tracksfired strategy with no particle ID
+		}//Marks end of tracksfired strategy with no particle ID*/
 
 	  //For TracksFired cut strategy selecting electrons
 	  if (fTrack && fCut && !fPions)
@@ -544,7 +544,7 @@ void calibration::Terminate()
       fTiming_Cut->Draw("Colz");
       Timing->SaveAs("vijay.pdf");
       TCanvas *Timing1;
-      Timing1 = new TCanvas("Timing1","time info.");
+      /* Timing1 = new TCanvas("Timing1","time info.");
       Timing1->Divide(2,2);
       Timing1->cd(1);
       fTim1->Draw();
@@ -553,13 +553,13 @@ void calibration::Terminate()
       Timing1->cd(3);
       fTim3->Draw();
       Timing1->cd(4);
-      fTim4->Draw();
+      fTim4->Draw(); */
       
-      TCanvas *pmt1_2;
+      /* TCanvas *pmt1_2;
       pmt1_2 = new TCanvas("pmt1_2","Bet. PMT1 &PMT2");
       pmt1_2->Divide(2,1);
       pmt1_2->cd(1);
-      //  fPMT1_2->Draw("Colz");
+      fPMT1_2->Draw("Colz");*/
    
     } 
 
