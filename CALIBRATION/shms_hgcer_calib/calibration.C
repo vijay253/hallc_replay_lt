@@ -244,7 +244,7 @@ Bool_t calibration::Process(Long64_t entry)
 
 	  // if(P_hgcer_goodAdcTdcDiffTime[ipmt] >40 || P_hgcer_goodAdcTdcDiffTime[ipmt] < 30) continue;
 	   
-	   //fTiming_Cut->Fill(P_hgcer_xAtCer[ipmt],P_hgcer_yAtCer[ipmt]);
+	  //fTiming_Cut->Fill(P_hgcer_xAtCer[ipmt],P_hgcer_yAtCer[ipmt]);
 
 	  // fTiming_Cut->Fill(P_hgcer_goodAdcTdcDiffTime[ipmt]);
 	   
@@ -312,7 +312,7 @@ Bool_t calibration::Process(Long64_t entry)
 	  if (!fTrack && fCut && fPions)
 	    {
 	      //Retrieve particle ID information
-	        // Float_t central_p = 6.0530;
+	      // Float_t central_p = 6.0530;
 	      // Float_t p = ((P_gtr_dp[0]/100.0)*central_p) + central_p;  //
 
 	      //Fill histogram visualizaing the pion selection
@@ -357,52 +357,52 @@ Bool_t calibration::Process(Long64_t entry)
 	    }   
 	  //Marks end of pion selection condition
 		      
-	   //For quadrant cut strategy with no particle ID cut
+	  //For quadrant cut strategy with no particle ID cut
 	     if (!fTrack && !fCut)
-	    {
-	      //Fill histogram of the full PulseInt spectra for each PMT
-	      fPulseInt[ipmt]->Fill(P_hgcer_goodAdcPulseInt[ipmt]);
+	       {
+		 //Fill histogram of the full PulseInt spectra for each PMT
+		 fPulseInt[ipmt]->Fill(P_hgcer_goodAdcPulseInt[ipmt]);
 
-	      //Retrieve information for particle tracking from focal plane
+		 //Retrieve information for particle tracking from focal plane
 
-	      //Fill histograms of what each PMT registers from each quadrant, this requires tracking the particle from the focal plane. Each quadrant is defined from the parameter files
-	      Float_t y_pos = P_tr_y[0] + P_tr_ph[0]*fhgc_zpos;
-	      Float_t x_pos = P_tr_x[0] + P_tr_th[0]*fhgc_zpos;
+		 //Fill histograms of what each PMT registers from each quadrant, this requires tracking the particle from the focal plane. Each quadrant is defined from the parameter files
+		 Float_t y_pos = P_tr_y[0] + P_tr_ph[0]*fhgc_zpos;
+		 Float_t x_pos = P_tr_x[0] + P_tr_th[0]*fhgc_zpos;
 		  
-	      //Condition for quadrant 1 mirror
-	      if (y_pos >= 4.6 && x_pos >= 9.4) fPulseInt_quad[0][ipmt]->Fill(P_hgcer_goodAdcPulseInt[ipmt]);
+		 //Condition for quadrant 1 mirror
+		 if (y_pos >= 4.6 && x_pos >= 9.4) fPulseInt_quad[0][ipmt]->Fill(P_hgcer_goodAdcPulseInt[ipmt]);
 
-	      //Condition for quadrant 2 mirror
-	      if (y_pos < 4.6 && x_pos >= 9.4) fPulseInt_quad[1][ipmt]->Fill(P_hgcer_goodAdcPulseInt[ipmt]);
+		 //Condition for quadrant 2 mirror
+		 if (y_pos < 4.6 && x_pos >= 9.4) fPulseInt_quad[1][ipmt]->Fill(P_hgcer_goodAdcPulseInt[ipmt]);
 
-	      //Condition for quadrant 3 mirror
-	      if (y_pos >= 4.6 && x_pos < 9.4) fPulseInt_quad[2][ipmt]->Fill(P_hgcer_goodAdcPulseInt[ipmt]);
+		 //Condition for quadrant 3 mirror
+		 if (y_pos >= 4.6 && x_pos < 9.4) fPulseInt_quad[2][ipmt]->Fill(P_hgcer_goodAdcPulseInt[ipmt]);
 
-	      //Condition for quadrant 4 mirror
+		 //Condition for quadrant 4 mirror
 	      if (y_pos < 4.6 && x_pos < 9.4) fPulseInt_quad[3][ipmt]->Fill(P_hgcer_goodAdcPulseInt[ipmt]);
-	      }//Marks end of no particle ID strategy */
+	    }//Marks end of no particle ID strategy */
 	  	  
-	    //For TracksFired cut strategy with no particle ID cut
-	    if (fTrack && !fCut)
-	    {
-	      //Fill histogram of the full PulseInt spectra for each PMT
-	      fPulseInt[ipmt]->Fill(P_hgcer_goodAdcPulseInt[ipmt]);
+	     //For TracksFired cut strategy with no particle ID cut
+	     if (fTrack && !fCut)
+	       {
+		 //Fill histogram of the full PulseInt spectra for each PMT
+		 fPulseInt[ipmt]->Fill(P_hgcer_goodAdcPulseInt[ipmt]);
 
-	      //Fill histograms with TracksFired cut, note that quadrant cuts are included
-	      for (Int_t iregion = 0; iregion < 4; iregion++)
-		{
-		  if (P_hgcer_numTracksFired[iregion] == (iregion + 1)) fPulseInt_quad[iregion][ipmt]->Fill(P_hgcer_goodAdcPulseInt[ipmt]);
-		}
-		}//Marks end of tracksfired strategy with no particle ID*/
+		 //Fill histograms with TracksFired cut, note that quadrant cuts are included
+		 for (Int_t iregion = 0; iregion < 4; iregion++)
+		   {
+		     if (P_hgcer_numTracksFired[iregion] == (iregion + 1)) fPulseInt_quad[iregion][ipmt]->Fill(P_hgcer_goodAdcPulseInt[ipmt]);
+		   }
+	       }//Marks end of tracksfired strategy with no particle ID*/
 
-	  //For TracksFired cut strategy selecting electrons
-	   if (fTrack && fCut && !fPions)
-	    {
-	      //Retrieve particle ID information
-	      // Float_t central_p = 6.0530;
-	      // Float_t p = ((P_gtr_dp[0]/100.0)*central_p) + central_p;
+	     //For TracksFired cut strategy selecting electrons
+	     if (fTrack && fCut && !fPions)
+	       {
+		 //Retrieve particle ID information
+		 // Float_t central_p = 6.0530;
+		 // Float_t p = ((P_gtr_dp[0]/100.0)*central_p) + central_p;
 
-	      //Fill histogram visualizaing the electron selection
+		 //Fill histogram visualizaing the electron selection
 
 	      Double_t p = *P_gtr_p;
 
@@ -682,12 +682,12 @@ void calibration::Terminate()
 		   cout<<" xpeaks[0] ="<<xpeaks[0]<<endl;
 		   cout<<"xpeaks[1] = "<<xpeaks[1]<<endl; 
 		   
-		    if (xpeaks[1] < xpeaks[0]) 
+		   if (xpeaks[1] < xpeaks[0]) 
  
-		      { cout<<"we are here"<<endl;
-                     k[0] =  xpeaks[0]; xpeaks[0] = xpeaks[1]; xpeaks[1] = k[0];}
-		    cout<<" xpeaks[0] ="<<xpeaks[0]<<endl;
-		    cout<<"xpeaks[1] = "<<xpeaks[1]<<endl;
+		     { cout<<"we are here"<<endl;
+		       k[0] =  xpeaks[0]; xpeaks[0] = xpeaks[1]; xpeaks[1] = k[0];}
+		   cout<<" xpeaks[0] ="<<xpeaks[0]<<endl;
+		   cout<<"xpeaks[1] = "<<xpeaks[1]<<endl;
 		    
 		   
 		  //Use the peak to fit the SPE with a Gaussian to determine the mean
@@ -771,12 +771,12 @@ void calibration::Terminate()
 			 //cout << "GOOD FIT RCHI2 "  << RChi2[ipad-1] << endl;
 		    } 
 		  
-		  // cout << xpeaks[0] <<endl;
-		  // cout<< " Amplitude " << PulseInt_quad[iquad][ipmt]->GetBinContent(PulseInt_quad[iquad][ipmt]->GetXaxis()->FindBin(xpeaks[0])) << endl;
-		  // cout<< " SD " <<SD[ipad-1]<<endl;
-		  // cout<<" mean "<<mean[ipad-1]<<endl;  
-		  // cout<<"  error       "<<mean_err[ipad-1]<<endl;
-		  // cout << " Chi2/DoF " << RChi2[ipad-1] << endl;
+		   // cout << xpeaks[0] <<endl;
+		   // cout<< " Amplitude " << PulseInt_quad[iquad][ipmt]->GetBinContent(PulseInt_quad[iquad][ipmt]->GetXaxis()->FindBin(xpeaks[0])) << endl;
+		   // cout<< " SD " <<SD[ipad-1]<<endl;
+		   // cout<<" mean "<<mean[ipad-1]<<endl;  
+		   // cout<<"  error       "<<mean_err[ipad-1]<<endl;
+		   // cout << " Chi2/DoF " << RChi2[ipad-1] << endl;
 		  
 		   ipad++;
 
@@ -854,88 +854,88 @@ void calibration::Terminate()
 	   fscaled[ipmt]->Scale(1.0/fscaled[ipmt]->Integral(), "width");               
 
 	  //Begin the removal of the Poisson-like background
-	  if (fFullShow) background_ipmt = new TCanvas(Form("backgrounf_pmt%d",ipmt), Form("NPE spectra for PMT%d with Poisson-like background",ipmt+1));
-	    if (fFullShow) background_ipmt->cd(1);
-	    // Poisson->SetParameter(0, 4);
-	    //  Poisson->SetParameter(1, 0.85);
-	     // Poisson->SetParLimits(0, 0.0, 4.0);
-	     // Poisson->SetParLimits(1, 0.8, 0.9);
-	     //fFullShow ? fscaled[ipmt]->Fit("Poisson","RQN") : fscaled[ipmt]->Fit("Poisson","RQN");
-	     // Poisson->SetParameter(0, Poisson->GetParameter(0));
-	     // Poisson->SetParameter(1, Poisson->GetParameter(1));
-	     // Poisson->SetParLimits(0, 0.0, 4.0);
-	     //Poisson->SetParLimits(1, 0.1, 1.2);
+	   if (fFullShow) background_ipmt = new TCanvas(Form("backgrounf_pmt%d",ipmt), Form("NPE spectra for PMT%d with Poisson-like background",ipmt+1));
+	   if (fFullShow) background_ipmt->cd(1);
+	   // Poisson->SetParameter(0, 4);
+	   //  Poisson->SetParameter(1, 0.85);
+	   // Poisson->SetParLimits(0, 0.0, 4.0);
+	   // Poisson->SetParLimits(1, 0.8, 0.9);
+	   //fFullShow ? fscaled[ipmt]->Fit("Poisson","RQN") : fscaled[ipmt]->Fit("Poisson","RQN");
+	   // Poisson->SetParameter(0, Poisson->GetParameter(0));
+	   // Poisson->SetParameter(1, Poisson->GetParameter(1));
+	   // Poisson->SetParLimits(0, 0.0, 4.0);
+	   //Poisson->SetParLimits(1, 0.1, 1.2);
 	   
-	    //  fFullShow ? fscaled[ipmt]->Fit("Poisson","RQN") : fscaled[ipmt]->Fit("Poisson","RQN");
-	    //  TF1 *g3 = new TF1("g3","Gauss3",0,2);
-	          sum_gauss_poisson->SetRange(0,5.0);
-                  sum_gauss_poisson->SetParameter(0,0.6);
-		  sum_gauss_poisson->SetParameter(1,1.0);	
-		  sum_gauss_poisson->SetParameter(2,0.39);
-		  sum_gauss_poisson->SetParameter(3,0.15);
-		  sum_gauss_poisson->SetParameter(4,2);
-		  sum_gauss_poisson->SetParameter(5,0.24);
-		  sum_gauss_poisson->SetParameter(6,0.12);
-		  sum_gauss_poisson->SetParameter(7,3.0);
-		  sum_gauss_poisson->SetParameter(8,0.075);
-		  sum_gauss_poisson->SetParameter(9,4.0);
-		  sum_gauss_poisson->SetParameter(10,0.15);
+	   //  fFullShow ? fscaled[ipmt]->Fit("Poisson","RQN") : fscaled[ipmt]->Fit("Poisson","RQN");
+	   //  TF1 *g3 = new TF1("g3","Gauss3",0,2);
+	   sum_gauss_poisson->SetRange(0,5.0);
+	   sum_gauss_poisson->SetParameter(0,0.6);
+	   sum_gauss_poisson->SetParameter(1,1.0);	
+	   sum_gauss_poisson->SetParameter(2,0.39);
+	   sum_gauss_poisson->SetParameter(3,0.15);
+	   sum_gauss_poisson->SetParameter(4,2);
+	   sum_gauss_poisson->SetParameter(5,0.24);
+	   sum_gauss_poisson->SetParameter(6,0.12);
+	   sum_gauss_poisson->SetParameter(7,3.0);
+	   sum_gauss_poisson->SetParameter(8,0.075);
+	   sum_gauss_poisson->SetParameter(9,4.0);
+	   sum_gauss_poisson->SetParameter(10,0.15);
 
-		  // cout<<" error in scale "<<xscaleErr<<endl;
-		  // sum_gauss_poisson->SetParLimits(0, 0 ,1.2);
-                  sum_gauss_poisson->SetParLimits(1, 1 - 2*xscaleErr, 1 + 2*xscaleErr);
-		  // sum_gauss_poisson->SetParLimits(2, 0.1, 0.3);
-                  //sum_gauss_poisson->SetParLimits(3, 0, 0.4);
-                  sum_gauss_poisson->SetParLimits(4, 2 - 3*xscaleErr,2 +  3*xscaleErr);
-		  // sum_gauss_poisson->SetParLimits(5, 0, 3);
-		  // sum_gauss_poisson->SetParLimits(6, 0.0, 0.24);
-                  sum_gauss_poisson->SetParLimits(7, 3 - 3*xscaleErr, 3 + 3*xscaleErr);
-		  // sum_gauss_poisson->SetParLimits(8, 0.0, 3);
-		  // sum_gauss_poisson->SetParLimits(9, 3.9, 4.2);
-		  // sum_gauss_poisson->SetParLimits(10, 0.0,0.8);*/
-	       	  // sum_gauss_poisson->SetLineColor(2);	 
-	     fFullShow ? fscaled[ipmt]->Fit("sum_gauss_poisson","RQN") : fscaled[ipmt]->Fit("sum_gauss_poisson","RQN");
-	    /*  cout<< "Gauss3 (0) = "<<Gauss3->GetParameter(0)<<endl;
-	    cout<< "Gauss3 (1) = "<<Gauss3->GetParameter(1)<<endl;
-	    cout<< "Gauss3 (2) = "<<Gauss3->GetParameter(2)<<endl;
-	    cout<< "Gauss3 (3) = "<<Gauss3->GetParameter(3)<<endl;
-	    cout<< "Gauss3 (4) = "<<Gauss3->GetParameter(4)<<endl;
-	    cout<< "Gauss3 (5) = "<<Gauss3->GetParameter(5)<<endl;
-	    cout<< "Gauss3 (6) = "<<Gauss3->GetParameter(6)<<endl;
-	    cout<< "Gauss3 (7) = "<<Gauss3->GetParameter(7)<<endl;
-	    cout<< "Gauss3 (8) = "<<Gauss3->GetParameter(8)<<endl;*/
+	   // cout<<" error in scale "<<xscaleErr<<endl;
+	   // sum_gauss_poisson->SetParLimits(0, 0 ,1.2);
+	   sum_gauss_poisson->SetParLimits(1, 1 - 2*xscaleErr, 1 + 2*xscaleErr);
+	   // sum_gauss_poisson->SetParLimits(2, 0.1, 0.3);
+	   //sum_gauss_poisson->SetParLimits(3, 0, 0.4);
+	   sum_gauss_poisson->SetParLimits(4, 2 - 3*xscaleErr,2 +  3*xscaleErr);
+	   // sum_gauss_poisson->SetParLimits(5, 0, 3);
+	   // sum_gauss_poisson->SetParLimits(6, 0.0, 0.24);
+	   sum_gauss_poisson->SetParLimits(7, 3 - 3*xscaleErr, 3 + 3*xscaleErr);
+	   // sum_gauss_poisson->SetParLimits(8, 0.0, 3);
+	   // sum_gauss_poisson->SetParLimits(9, 3.9, 4.2);
+	   // sum_gauss_poisson->SetParLimits(10, 0.0,0.8);*/
+	   // sum_gauss_poisson->SetLineColor(2);	 
+	   fFullShow ? fscaled[ipmt]->Fit("sum_gauss_poisson","RQN") : fscaled[ipmt]->Fit("sum_gauss_poisson","RQN");
+	   /*  cout<< "Gauss3 (0) = "<<Gauss3->GetParameter(0)<<endl;
+	       cout<< "Gauss3 (1) = "<<Gauss3->GetParameter(1)<<endl;
+	       cout<< "Gauss3 (2) = "<<Gauss3->GetParameter(2)<<endl;
+	       cout<< "Gauss3 (3) = "<<Gauss3->GetParameter(3)<<endl;
+	       cout<< "Gauss3 (4) = "<<Gauss3->GetParameter(4)<<endl;
+	       cout<< "Gauss3 (5) = "<<Gauss3->GetParameter(5)<<endl;
+	       cout<< "Gauss3 (6) = "<<Gauss3->GetParameter(6)<<endl;
+	       cout<< "Gauss3 (7) = "<<Gauss3->GetParameter(7)<<endl;
+	       cout<< "Gauss3 (8) = "<<Gauss3->GetParameter(8)<<endl;*/
 
-	    sum_gauss_poisson->SetParameter(0,sum_gauss_poisson->GetParameter(0));
-	    sum_gauss_poisson->SetParameter(1,sum_gauss_poisson->GetParameter(1));	
-	    sum_gauss_poisson->SetParameter(2,sum_gauss_poisson->GetParameter(2));
-	    sum_gauss_poisson->SetParameter(3,sum_gauss_poisson->GetParameter(3));
-	    sum_gauss_poisson->SetParameter(4,sum_gauss_poisson->GetParameter(4));
-	    sum_gauss_poisson->SetParameter(5,sum_gauss_poisson->GetParameter(5));
-	    sum_gauss_poisson->SetParameter(6,sum_gauss_poisson->GetParameter(6));
-	    sum_gauss_poisson->SetParameter(7,sum_gauss_poisson->GetParameter(7));
-	    sum_gauss_poisson->SetParameter(8,sum_gauss_poisson->GetParameter(8));
-	    sum_gauss_poisson->SetParameter(9,sum_gauss_poisson->GetParameter(9));
-	    sum_gauss_poisson->SetParameter(10,sum_gauss_poisson->GetParameter(10));
-	    sum_gauss_poisson->SetLineColor(5);
+	   sum_gauss_poisson->SetParameter(0,sum_gauss_poisson->GetParameter(0));
+	   sum_gauss_poisson->SetParameter(1,sum_gauss_poisson->GetParameter(1));	
+	   sum_gauss_poisson->SetParameter(2,sum_gauss_poisson->GetParameter(2));
+	   sum_gauss_poisson->SetParameter(3,sum_gauss_poisson->GetParameter(3));
+	   sum_gauss_poisson->SetParameter(4,sum_gauss_poisson->GetParameter(4));
+	   sum_gauss_poisson->SetParameter(5,sum_gauss_poisson->GetParameter(5));
+	   sum_gauss_poisson->SetParameter(6,sum_gauss_poisson->GetParameter(6));
+	   sum_gauss_poisson->SetParameter(7,sum_gauss_poisson->GetParameter(7));
+	   sum_gauss_poisson->SetParameter(8,sum_gauss_poisson->GetParameter(8));
+	   sum_gauss_poisson->SetParameter(9,sum_gauss_poisson->GetParameter(9));
+	   sum_gauss_poisson->SetParameter(10,sum_gauss_poisson->GetParameter(10));
+	   sum_gauss_poisson->SetLineColor(5);
 
-	      fFullShow ? fscaled[ipmt]->Fit("sum_gauss_poisson","RQ") : fscaled[ipmt]->Fit("sum_gauss_poisson","RQ");
+	   fFullShow ? fscaled[ipmt]->Fit("sum_gauss_poisson","RQ") : fscaled[ipmt]->Fit("sum_gauss_poisson","RQ");
 
-            TF1 *g3 = new TF1("g3","gaus",0,5.0);
-	    {  
-                  g3->SetParameter(0,sum_gauss_poisson->GetParameter(0));
-		  g3->SetParameter(1,sum_gauss_poisson->GetParameter(1));
-		  g3->SetParameter(2,sum_gauss_poisson->GetParameter(2));
-                  g3->SetLineColor(1);
-                  g3->Draw("same");}
-            TF1 *g4 = new TF1("g4","gaus",0,5.0);
-	    {
-                  g4->SetParameter(0,sum_gauss_poisson->GetParameter(3));
-		  g4->SetParameter(1,sum_gauss_poisson->GetParameter(4));
-		  g4->SetParameter(2,sum_gauss_poisson->GetParameter(5));
-                  g4->SetLineColor(3);
-                  g4->Draw("same");}
-            TF1 *g5 = new TF1("g5","gaus",0,5.0);
-	    {
+	   TF1 *g3 = new TF1("g3","gaus",0,5.0);
+	   {  
+	     g3->SetParameter(0,sum_gauss_poisson->GetParameter(0));
+	     g3->SetParameter(1,sum_gauss_poisson->GetParameter(1));
+	     g3->SetParameter(2,sum_gauss_poisson->GetParameter(2));
+	     g3->SetLineColor(1);
+	     g3->Draw("same");}
+	   TF1 *g4 = new TF1("g4","gaus",0,5.0);
+	   {
+	     g4->SetParameter(0,sum_gauss_poisson->GetParameter(3));
+	     g4->SetParameter(1,sum_gauss_poisson->GetParameter(4));
+	     g4->SetParameter(2,sum_gauss_poisson->GetParameter(5));
+	     g4->SetLineColor(3);
+	     g4->Draw("same");}
+	   TF1 *g5 = new TF1("g5","gaus",0,5.0);
+	   {
                   g5->SetParameter(0,sum_gauss_poisson->GetParameter(6));
 		  g5->SetParameter(1,sum_gauss_poisson->GetParameter(7));
 		  g5->SetParameter(2,sum_gauss_poisson->GetParameter(8));
