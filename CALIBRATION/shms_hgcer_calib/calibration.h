@@ -83,6 +83,7 @@ class calibration : public TSelector {
   // Declaration of preprocessing quantities
   Double_t  timing_mean[4];
   Double_t  timing_std[4];
+  Double_t x;
 
   // Readers to access the data
   TTreeReaderValue<Int_t>    Ndata_P_tr_beta            = {fReader, "Ndata.P.tr.beta"};
@@ -105,7 +106,7 @@ class calibration : public TSelector {
   TTreeReaderArray<Double_t> P_hgcer_xAtCer             = {fReader, "P.hgcer.xAtCer"};
   TTreeReaderArray<Double_t> P_hgcer_yAtCer             = {fReader, "P.hgcer.yAtCer"};
   
- calibration(TTree * /*tree*/ =0) : fChain(0) {fPulseInt = 0, fPulseInt_quad = 0, fCut_everything = 0, fCut_enorm=0, fCut_electron = 0, fCut_pion = 0, fBeta_Cut = 0, fBeta_Full = 0, fTiming_Cut = 0, fTiming_Full = 0, fFullRead = kFALSE, fFullShow = kFALSE, fTrack = kFALSE, fCut = kFALSE, fPions = kFALSE;}
+ calibration(TTree * /*tree*/ =0) : fChain(0) {fPulseInt = 0, fPulseInt_quad = 0, fCut_everything = 0, fCut_enorm=0, fCut_electron = 0, fCut_pion = 0, fBeta_Cut = 0, fBeta_Full = 0, fTiming_Cut = 0, fTiming_Full = 0,fTim1 =0,fTim2 =0,fTim3 = 0,fTim4 = 0,fFullRead = kFALSE, fFullShow = kFALSE, fTrack = kFALSE, fCut = kFALSE, fPions = kFALSE;}
   virtual ~calibration() { }
   virtual Int_t   Version() const { return 2; }
   virtual void    Begin(TTree *tree);
@@ -158,9 +159,9 @@ Bool_t calibration::Notify()
 //Poisson distribution is used to remove background from larger values of NPE
 Double_t poisson(Double_t *x, Double_t *par)
 {
-  Double_t result1 = (par[1]*pow(par[0],x[0])*exp(-par[0]))/(tgamma(x[0]+1));
+  Double_t result1 = (par[1]*pow(par[0],x[0])*exp(-par[0]))/(tgamma(x[0]+1));                 
   return result1;
-}
+  }
 //Gaussian distribution is used to find the mean of the SPE and determine spacing between subsequent NPE
 Double_t gauss(Double_t *x, Double_t *par)
 {
@@ -172,11 +173,22 @@ Double_t gauss(Double_t *x, Double_t *par)
   return result1 + result2 + result3 + result4 + result5;
 }
 
+// Sum of Gaussian distribution and Poissoin distribution
+  Double_t sum_gauss_poisson1(Double_t *x, Double_t *par){
+  Double_t result1 = par[0]*exp((-0.5)*(pow((x[0] - par[1]),2)/pow((par[2]),2)));
+  Double_t result2 = par[3]*exp((-0.5)*(pow((x[0] - par[4]),2)/pow((par[5]),2)));
+  Double_t result3 = par[6]*exp((-0.5)*(pow((x[0] - par[7]),2)/pow((par[8]),2)));
+  Double_t result4 = (par[10]*pow(par[9],x[0])*exp(-par[9]))/(tgamma(x[0]+1)); 
+
+  return result1 + result2 + result3 +result4;
+
+}
 //A simple linear equation is used to determine how linear the means of the NPE are
 Double_t linear(Double_t *x, Double_t *par)
 {
   Double_t result1 = par[0]*x[0] + par[1];
   return result1;
 }
+
 
 #endif // #ifdef calibration_cxx
