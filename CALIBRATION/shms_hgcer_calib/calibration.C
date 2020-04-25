@@ -1048,8 +1048,8 @@ void calibration::Terminate()
 	  TPaveText *t = new TPaveText(0.60, 0.62, 0.90, 0.75, "NDC");{
            t->SetTextColor(kBlack);
 	   t->AddText(Form(" Chi/NDF = %0f", ChiNDF ));
-	   t->AddText(Form(" Slope = %0f", sl ));
-	   t->AddText(Form(" Slope_Error = %0f", sl_err ));
+	   t->AddText(Form(" Slope = %0f",sl));
+	   t->AddText(Form(" Slope_Error = %0f",sl_err ));
 	   t->AddText(Form(" Intercept = 0 " ));
            t->Draw();}
 	     
