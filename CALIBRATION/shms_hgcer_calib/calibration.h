@@ -38,6 +38,7 @@ class calibration : public TSelector {
 
   // Declaration of histograms
   TH1F          **fPulseInt;
+  TH1F          **fPulseInt_poiss;
   TH1F         ***fPulseInt_quad;
   TH2F           *fCut_everything;
   TH1F           *fCut_enorm;
@@ -72,6 +73,7 @@ class calibration : public TSelector {
   TCanvas *quad_cuts[4];
   TCanvas *low_stats_ipmt;
   TCanvas *background_ipmt;
+  TCanvas *Full_zoom_fit_ipmt;
   TCanvas *final_spectra_ipmt;
   TCanvas *background_mk2_ipmt;
   TCanvas *final_spectra_mk2_ipmt;
@@ -106,7 +108,7 @@ class calibration : public TSelector {
   TTreeReaderArray<Double_t> P_hgcer_xAtCer             = {fReader, "P.hgcer.xAtCer"};
   TTreeReaderArray<Double_t> P_hgcer_yAtCer             = {fReader, "P.hgcer.yAtCer"};
   
- calibration(TTree * /*tree*/ =0) : fChain(0) {fPulseInt = 0, fPulseInt_quad = 0, fCut_everything = 0, fCut_enorm=0, fCut_electron = 0, fCut_pion = 0, fBeta_Cut = 0, fBeta_Full = 0, fTiming_Cut = 0, fTiming_Full = 0,fTim1 =0,fTim2 =0,fTim3 = 0,fTim4 = 0,fFullRead = kFALSE, fFullShow = kFALSE, fTrack = kFALSE, fCut = kFALSE, fPions = kFALSE;}
+ calibration(TTree * /*tree*/ =0) : fChain(0) {fPulseInt = 0, fPulseInt_poiss = 0, fPulseInt_quad = 0, fCut_everything = 0, fCut_enorm=0, fCut_electron = 0, fCut_pion = 0, fBeta_Cut = 0, fBeta_Full = 0, fTiming_Cut = 0, fTiming_Full = 0,fTim1 =0,fTim2 =0,fTim3 = 0,fTim4 = 0,fFullRead = kFALSE, fFullShow = kFALSE, fTrack = kFALSE, fCut = kFALSE, fPions = kFALSE;}
   virtual ~calibration() { }
   virtual Int_t   Version() const { return 2; }
   virtual void    Begin(TTree *tree);
@@ -172,15 +174,17 @@ Double_t gauss(Double_t *x, Double_t *par)
   Double_t result5 = par[12]*exp((-0.5)*(pow((x[0] - par[13]),2)/pow((par[14]),2)));
   return result1 + result2 + result3 + result4 + result5;
 }
-
+ 
 // Sum of Gaussian distribution and Poissoin distribution
   Double_t sum_gauss_poisson1(Double_t *x, Double_t *par){
   Double_t result1 = par[0]*exp((-0.5)*(pow((x[0] - par[1]),2)/pow((par[2]),2)));
   Double_t result2 = par[3]*exp((-0.5)*(pow((x[0] - par[4]),2)/pow((par[5]),2)));
   Double_t result3 = par[6]*exp((-0.5)*(pow((x[0] - par[7]),2)/pow((par[8]),2)));
-  Double_t result4 = (par[10]*pow(par[9],x[0])*exp(-par[9]))/(tgamma(x[0]+1)); 
+  Double_t result4 = par[9]*exp((-0.5)*(pow((x[0] - par[10]),2)/pow((par[11]),2)));
+  Double_t result5 = (par[13]*pow(par[12],x[0])*exp(-par[12]))/(tgamma(x[0]+1)); 
+  Double_t result6 = (par[15]*pow(par[14],x[0])*exp(-par[14]))/(tgamma(x[0]+1)); 
 
-  return result1 + result2 + result3 +result4;
+  return result1 + result2 + result3 +result4 + result5 + result6;
 
 }
 //A simple linear equation is used to determine how linear the means of the NPE are

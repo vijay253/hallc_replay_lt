@@ -39,9 +39,9 @@ void run_cal(Int_t RunNumber = 0, Int_t NumEvents = 0, Int_t coin = 0)
   
   TChain ch("T");
   if (coin == 1){ch.Add(Form("../../ROOTfiles/shms_coin_replay_production_all_%d_%d.root",7882,-1));
-     ch.Add(Form("../../ROOTfiles/shms_coin_replay_production_all_%d_%d.root", 7883,-1));} // There is no need for these to be form statements if you're feeding them a fixed variable
-  /* ch.Add(Form("ROOTfiles/shms_coin_replay_production_all_%d_%d.root",4782,-1));  // You can just add the specfifc 4/5 ROOTfiles you want SK 28/8/19
-    ch.Add(Form("ROOTfiles/shms_coin_replay_production_all_%d_%d.root",4783,-1));
+     ch.Add(Form("../../ROOTfiles/shms_coin_replay_production_all_%d_%d.root", 7883,-1)); // There is no need for these to be form statements if you're feeding them a fixed variable
+     ch.Add(Form("../../ROOTfiles/shms_coin_replay_production_all_%d_%d.root",7884,-1));}  // You can just add the specfifc 4/5 ROOTfiles you want SK 28/8/19
+    /*ch.Add(Form("ROOTfiles/shms_coin_replay_production_all_%d_%d.root",4783,-1));
     ch.Add(Form("ROOTfiles/shms_coin_replay_production_all_%d_%d.root",4787,-1));
     ch.Add(Form("ROOTfiles/shms_coin_replay_production_all_%d_%d.root",4781,-1));
     ch.Add(Form("ROOTfiles/shms_coin_replay_production_all_%d_%d.root",4803,-1));}*/

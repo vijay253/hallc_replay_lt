@@ -21,8 +21,6 @@
 //
 // Root > T->Process("calibration.C+")
 // Root > T->Process("calibration.C+","some options")
-//
-
 
 #include "calibration.h"
 #include <TH1.h>
@@ -92,12 +90,21 @@ void calibration::SlaveBegin(TTree * /*tree*/)
   Int_t ADC_max;
   Int_t bins;
 
+  Int_t ADC_poiss_min;
+  Int_t ADC_poiss_max;
+  Int_t bins_poiss;
+
   ADC_min = 0;
-  ADC_max = 35;
+  ADC_max = 100;
   bins = 2*(abs(ADC_min) + abs(ADC_max));
+
+  ADC_poiss_min = 0;
+  ADC_poiss_max = 200;
+  bins_poiss = 4*(abs(ADC_min) + abs(ADC_max));
+  
   
 
-
+  fPulseInt_poiss = new TH1F*[4];
   fPulseInt = new TH1F*[4];
   fPulseInt_quad = new TH1F**[4];
   fPulseInt_quad[0] = new TH1F*[4];
@@ -111,6 +118,9 @@ void calibration::SlaveBegin(TTree * /*tree*/)
       fPulseInt[ipmt] = new TH1F(Form("PulseInt_PMT%d",ipmt+1),Form("Pulse Integral PMT%d; ADC Channel (pC); Counts",ipmt+1), bins, ADC_min, ADC_max);
       GetOutputList()->Add(fPulseInt[ipmt]);
 
+      fPulseInt_poiss[ipmt] = new TH1F(Form("PulseInt_poiss_PMT%d",ipmt+1),Form("Pulse Integral PMT%d; ADC Channel (pC); Counts",ipmt+1), bins_poiss, ADC_poiss_min, ADC_poiss_max);
+      GetOutputList()->Add(fPulseInt_poiss[ipmt]);
+
       for (Int_t iquad = 0; iquad < 4; iquad++)
 	{
 	  fPulseInt_quad[iquad][ipmt] = new TH1F(Form("PulseInt_quad%d_PMT%d",iquad+1,ipmt+1),Form("Pulse Integral PMT%d quad%d; ADC Channel (pC); Counts",ipmt+1,iquad+1),bins,ADC_min,ADC_max);
@@ -118,7 +128,16 @@ void calibration::SlaveBegin(TTree * /*tree*/)
      
 	}
     }
+  
+  // Histograms for Timing info visualizations
+ 
+  fTiming_Full = new TH1F("Timing_Full", "Full timing information for events;Time (ns);Counts", 200, -40, 50);
+  GetOutputList()->Add(fTiming_Full);
 
+  fTiming_Cut = new TH1F("Timing_Cut", "Timing cut used for 'good' hits; Time (ns);Counts", 200, -10, 50);
+  GetOutputList()->Add(fTiming_Cut);
+
+  //Histograms for timing info for each PTMs
 
   fTim1 = new TH1F("Timing_PMT1", "ADC TDC Diff PMT1 ; Time (ns) ;Counts", 200, -10.0, 50.0);
   GetOutputList()->Add(fTim1);
@@ -129,29 +148,14 @@ void calibration::SlaveBegin(TTree * /*tree*/)
   fTim4 = new TH1F("Timing_PMT4", "ADC TDC Diff PMT4 ; Time (ns) ;Counts", 200, -10.0, 50.0);
   GetOutputList()->Add(fTim4);
 
-  //Timing and Beta cut visualizations
+  //Histograms for Beta  visualizations
+
   fBeta_Cut = new TH1F("Beta_Cut", "Beta cut used for 'good' hits;Beta;Counts", 100, -0.1, 1.5);
-  GetOutputList()->Add(fBeta_Cut); 
-  
+  GetOutputList()->Add(fBeta_Cut);  
   fBeta_Full = new TH1F("Beta_Full", "Full beta for events;Beta;Counts", 100, -0.1, 1.5);
   GetOutputList()->Add(fBeta_Full);
 
-  // fTim = new TH1F("Tim", "Time ; Time ;Counts", 100, -50.0, 0.0);
-  // GetOutputList()->Add(fTim);
-
-  fTiming_Cut = new TH1F("Timing_Cut", "Timing cut used for 'good' hits; Time (ns);Counts", 200, -10, 50);
-  GetOutputList()->Add(fTiming_Cut);
-
-  //fTiming_Cut = new TH2F("Timing_Cut", "Timing cut used for good hits ; Time (ns); Counts", 500, -50, 50, 500, 0.0, 200);
-  //GetOutputList()->Add(fTiming_Cut);
-
-  fTiming_Full = new TH1F("Timing_Full", "Full timing information for events;Time (ns);Counts", 200, -40, 50);
-  GetOutputList()->Add(fTiming_Full);
-
-  // fTiming_Full = new TH2F("Timing_Full", "Full timing information for events ;Time (ns); Counts", 500, -30, 40, 500, 0.0, 200);
-  // GetOutputList()->Add(fTiming_Full);
-
-  //Particle ID cut visualization
+  //Histograms for Particle ID cut visualization
 
   fCut_everything = new TH2F("Cut_everything", "Visualization of no cuts; Normalized  Energy; Pre-Shower Energy (GeV)", 250, 0, 1.5, 250, 0, 1.0);
   GetOutputList()->Add(fCut_everything);
@@ -195,7 +199,7 @@ Bool_t calibration::Process(Long64_t entry)
   fpmts = fhgc_pmts;   //Note HGC & NGC have the same # of PMTS
 
   //Require only one good track reconstruction for the event                         
-  //if (*Ndata_P_tr_beta != 1) return kTRUE;
+  if (*Ndata_P_tr_beta != 1) return kTRUE;
   
   //Redundant, but useful if multiple tracks are eventually allowed
   for (Int_t itrack = 0; itrack < *Ndata_P_tr_beta; itrack++) 
@@ -208,44 +212,36 @@ Bool_t calibration::Process(Long64_t entry)
       //Filling the histograms
       for (Int_t ipmt = 0; ipmt < fpmts; ipmt++) 
 	{	  
+	  fTiming_Full->Fill(P_hgcer_goodAdcTdcDiffTime[ipmt]);    
+   
 	  //Perform a loose timing cut    
-	  fTiming_Full->Fill(P_hgcer_goodAdcTdcDiffTime[ipmt]);       
 
-	    if(ipmt ==0){
+	  if(ipmt ==0){
 
 	    if(P_hgcer_goodAdcTdcDiffTime[ipmt] >38 || P_hgcer_goodAdcTdcDiffTime[ipmt] < 34) continue;                      //13 9
-
 	    fTim1->Fill(P_hgcer_goodAdcTdcDiffTime[ipmt]);
-
 	  }
 
 	  if(ipmt ==1){
 
 	    if(P_hgcer_goodAdcTdcDiffTime[ipmt] >36 || P_hgcer_goodAdcTdcDiffTime[ipmt] < 33) continue;                          //12 7
-
 	    fTim2->Fill(P_hgcer_goodAdcTdcDiffTime[ipmt]);
-      
-	  }
+      	  }
+
 	  if(ipmt ==2){
-
 	    if(P_hgcer_goodAdcTdcDiffTime[ipmt] >36 || P_hgcer_goodAdcTdcDiffTime[ipmt] < 33) continue;                           //12 7
-
 	    fTim3->Fill(P_hgcer_goodAdcTdcDiffTime[ipmt]);
       
 	  }
 	  if(ipmt ==3){
 
 	    if(P_hgcer_goodAdcTdcDiffTime[ipmt] >38 || P_hgcer_goodAdcTdcDiffTime[ipmt] < 30) continue;                                  //12 8
- 
 	    fTim4->Fill(P_hgcer_goodAdcTdcDiffTime[ipmt]);
       
-	    }
+	  }
 	  // cut modified by VK, 24/05/19
 
-	  // if(P_hgcer_goodAdcTdcDiffTime[ipmt] >40 || P_hgcer_goodAdcTdcDiffTime[ipmt] < 30) continue;
-	   
-	  //fTiming_Cut->Fill(P_hgcer_xAtCer[ipmt],P_hgcer_yAtCer[ipmt]);
-
+	  //  if(P_hgcer_goodAdcTdcDiffTime[ipmt] >40 || P_hgcer_goodAdcTdcDiffTime[ipmt] < 30) continue;
 	  // fTiming_Cut->Fill(P_hgcer_goodAdcTdcDiffTime[ipmt]);
 	   
 	  //Cuts to remove entries corresponding to a PMT not registering a hit    
@@ -288,6 +284,7 @@ Bool_t calibration::Process(Long64_t entry)
 
 		  //Fill histogram of the full PulseInt spectra for each PMT
 		  fPulseInt[ipmt]->Fill(P_hgcer_goodAdcPulseInt[ipmt]);
+		  fPulseInt_poiss[ipmt]->Fill(P_hgcer_goodAdcPulseInt[ipmt]);
 
 		  //Fill histograms of what each PMT registers from each quadrant, this requires tracking the particle from the focal plane. Each quadrant is defined from the parameter files
 		  Float_t y_pos = P_tr_y[0] + P_tr_ph[0]*fhgc_zpos;                              
@@ -336,6 +333,8 @@ Bool_t calibration::Process(Long64_t entry)
 
 		  //Fill histogram of the full PulseInt spectra for each PMT
 		  fPulseInt[ipmt]->Fill(P_hgcer_goodAdcPulseInt[ipmt]);
+		  fPulseInt_poiss[ipmt]->Fill(P_hgcer_goodAdcPulseInt[ipmt]);
+
 
 		  //Fill histograms of what each PMT registers from each quadrant, this requires tracking the particle from the focal plane. Each quadrant is defined from the parameter files
 		  Float_t y_pos = P_tr_y[0] + P_tr_ph[0]*fhgc_zpos;                        
@@ -362,6 +361,8 @@ Bool_t calibration::Process(Long64_t entry)
 	       {
 		 //Fill histogram of the full PulseInt spectra for each PMT
 		 fPulseInt[ipmt]->Fill(P_hgcer_goodAdcPulseInt[ipmt]);
+		  fPulseInt_poiss[ipmt]->Fill(P_hgcer_goodAdcPulseInt[ipmt]);
+
 
 		 //Retrieve information for particle tracking from focal plane
 
@@ -380,20 +381,22 @@ Bool_t calibration::Process(Long64_t entry)
 
 		 //Condition for quadrant 4 mirror
 	      if (y_pos < 4.6 && x_pos < 9.4) fPulseInt_quad[3][ipmt]->Fill(P_hgcer_goodAdcPulseInt[ipmt]);
-	    }//Marks end of no particle ID strategy */
+	    }//Marks end of no particle ID strategy 
 	  	  
 	     //For TracksFired cut strategy with no particle ID cut
 	     if (fTrack && !fCut)
 	       {
 		 //Fill histogram of the full PulseInt spectra for each PMT
 		 fPulseInt[ipmt]->Fill(P_hgcer_goodAdcPulseInt[ipmt]);
+		  fPulseInt_poiss[ipmt]->Fill(P_hgcer_goodAdcPulseInt[ipmt]);
+
 
 		 //Fill histograms with TracksFired cut, note that quadrant cuts are included
 		 for (Int_t iregion = 0; iregion < 4; iregion++)
 		   {
 		     if (P_hgcer_numTracksFired[iregion] == (iregion + 1)) fPulseInt_quad[iregion][ipmt]->Fill(P_hgcer_goodAdcPulseInt[ipmt]);
 		   }
-	       }//Marks end of tracksfired strategy with no particle ID*/
+	       }//Marks end of tracksfired strategy with no particle ID
 
 	     //For TracksFired cut strategy selecting electrons
 	     if (fTrack && fCut && !fPions)
@@ -422,6 +425,8 @@ Bool_t calibration::Process(Long64_t entry)
 
 		  //Fill histogram of the full PulseInt spectra for each PMT
 		  fPulseInt[ipmt]->Fill(P_hgcer_goodAdcPulseInt[ipmt]);
+		  fPulseInt_poiss[ipmt]->Fill(P_hgcer_goodAdcPulseInt[ipmt]);
+
 
 		  //Fill histograms with TracksFired cut, note that quadrant cuts are included so any off quadrant histograms will be empty
 		  for (Int_t iregion = 0; iregion < 4; iregion++)
@@ -458,6 +463,8 @@ Bool_t calibration::Process(Long64_t entry)
 
 		  //Fill histogram of the full PulseInt spectra for each PMT
 		  fPulseInt[ipmt]->Fill(P_hgcer_goodAdcPulseInt[ipmt]);
+		  fPulseInt_poiss[ipmt]->Fill(P_hgcer_goodAdcPulseInt[ipmt]);
+
 
 		  //Fill histograms with TracksFired cut, note that quadrant cuts are included
 		  for (Int_t iregion = 0; iregion < 4; iregion++)
@@ -497,14 +504,17 @@ void calibration::Terminate()
   Info("Terminate", "Histograms formed, now starting calibration.\n'Peak Buffer full' is a good warning!\n");
   printf("\n");
 
-  gStyle->SetOptStat(1000000001);
+  //gStyle->SetOptStat(1000000001);
 
   //Have to extract the histograms from the OutputList
   TH1F* PulseInt[4];
+  TH1F* PulseInt_poiss[4];
   TH1F* PulseInt_quad[4][4];
   for (Int_t ipmt = 0; ipmt < 4; ipmt++)
     {
       PulseInt[ipmt] = dynamic_cast<TH1F*> (GetOutputList()->FindObject(Form("PulseInt_PMT%d",ipmt+1)));
+      PulseInt_poiss[ipmt] = dynamic_cast<TH1F*> (GetOutputList()->FindObject(Form("PulseInt_poiss_PMT%d",ipmt+1)));
+
       for (Int_t iquad = 0; iquad < 4; iquad++)
 	{
 	  PulseInt_quad[iquad][ipmt] = dynamic_cast<TH1F*> (GetOutputList()->FindObject(Form("PulseInt_quad%d_PMT%d",iquad+1,ipmt+1)));
@@ -536,17 +546,19 @@ void calibration::Terminate()
       fBeta_Cut->Draw();
       Beta->SaveAs("Beta.pdf");
 
-      //Canvas to show timing cut information
+      //Canvas to show full timing  information
       TCanvas *Timing;
       Timing = new TCanvas("Timing", "Timing information for events");
-      Timing->Divide(2,1);
-      Timing->cd(1);
+      // Timing->Divide(2,1);
+      // Timing->cd(1);
       fTiming_Full->Draw("Colz");
-      Timing->cd(2);
-      fTiming_Cut->Draw("Colz");
-      Timing->SaveAs("Timing.pdf");
+      //Timing->cd(2);
+      // fTiming_Cut->Draw("Colz");
+      Timing->SaveAs("Full_timing.png");
+      //Canvas to show timing cut info for each PMTs
+
       TCanvas *Timing1;
-      Timing1 = new TCanvas("Timing1","time info.");
+      Timing1 = new TCanvas("Timing1","time cuts for each pmts.");
       Timing1->Divide(2,2);
       Timing1->cd(1);
       fTim1->Draw();
@@ -556,13 +568,7 @@ void calibration::Terminate()
       fTim3->Draw();
       Timing1->cd(4);
       fTim4->Draw(); 
-      
-      /* TCanvas *pmt1_2;
-      pmt1_2 = new TCanvas("pmt1_2","Bet. PMT1 &PMT2");
-      pmt1_2->Divide(2,1);
-      pmt1_2->cd(1);
-      fPMT1_2->Draw("Colz");*/
-   
+      Timing1->SaveAs("Timing_cuts.png");
     } 
 
   //Show the particle cuts performed in the histogram forming
@@ -578,7 +584,7 @@ void calibration::Terminate()
       cut_visualization->cd(2);
       fPions ? fCut_pion->Draw("Colz") : fCut_electron->Draw("Colz");
     }
-   gStyle->SetOptFit(111);
+  //gStyle->SetOptFit(1001);
 
   //Single Gaussian to find mean of SPE
   TF1 *Gauss1 = new TF1("Gauss1",gauss,100,3,3);
@@ -598,8 +604,8 @@ void calibration::Terminate()
 
  //sum_gauss_poisson  distribution to remove high NPE background
 
-  TF1 *sum_gauss_poisson = new TF1("sum_gauss_poisson", sum_gauss_poisson1, 0.0, 5.0,11.0);
-  sum_gauss_poisson->SetParNames("Amplitude 1","Mean 1","Std. Dev. 1","Amplitude 2","Mean 2","Std. Dev. 2","Amplitude 3","Mean 3","Std. Dev. 3", "Mean 4", "Amplitude 4");
+  TF1 *sum_gauss_poisson = new TF1("sum_gauss_poisson", sum_gauss_poisson1, 0.0, 18.0 ,16.0);
+  //sum_gauss_poisson->SetParNames("Amplitude 1","Mean 1","Std. Dev. 1","Amplitude 2","Mean 2","Std. Dev. 2","Amplitude 3","Mean 3","Std. Dev. 3", "Mean 4", "Amplitude 4");
 
 
   //Note about Poisson background, the mean varies between detectors/operating conditions so this quantity may require user input
@@ -632,7 +638,9 @@ void calibration::Terminate()
   //Array to hold the Poisson character of the calibrations
   Double_t Pois_Chi[2];
   Pois_Chi[0] = 0.0, Pois_Chi[1] = 0.0;
-  gStyle->SetOptFit(111);
+
+  // gStyle->SetOptFit(1000000001); 
+  gStyle->SetOptStat(0); 
   //Main loop for calibration
   for (Int_t ipmt=0; ipmt < (fhgc_pmts); ipmt++)
     {  
@@ -661,12 +669,12 @@ void calibration::Terminate()
 	      if (fFullShow) quad_cuts[ipmt]->cd(ipad);
 
 	      if (PulseInt_quad[iquad][ipmt]->GetEntries() > 0) 
-		{
+		{		 
 		  //Perform search for the SPE and save the peak into the array xpeaks   //0.001
-		   fFullShow ? s->Search(PulseInt_quad[iquad][ipmt], 2.0, "nobackground",0.05) : s->Search(PulseInt_quad[iquad][ipmt], 2.0, "nobackground&&nodraw",0.05);
+		  fFullShow ? s->Search(PulseInt_quad[iquad][ipmt], 2.0, "nobackground",0.05) : s->Search(PulseInt_quad[iquad][ipmt], 2.0, "nobackground&&nodraw",0.05);
                     
-		    TList *functions = PulseInt_quad[iquad][ipmt]->GetListOfFunctions(); 
-		    TPolyMarker *pm = (TPolyMarker*)functions->FindObject("TPolyMarker");
+		  TList *functions = PulseInt_quad[iquad][ipmt]->GetListOfFunctions(); 
+		  TPolyMarker *pm = (TPolyMarker*)functions->FindObject("TPolyMarker");
 		  
 		  if ( pm == nullptr)               
 		    {
@@ -675,24 +683,24 @@ void calibration::Terminate()
 		      continue;
 		    }	 
 		  	
-		   Double_t k[3];
+		  Double_t k[3];
 		 
-		   Double_t * xpeaks = pm->GetX();   
+		  Double_t * xpeaks = pm->GetX();   
 
-		   cout<<" xpeaks[0] ="<<xpeaks[0]<<endl;
-		   cout<<"xpeaks[1] = "<<xpeaks[1]<<endl; 
+		  cout<<" xpeaks[0] ="<<xpeaks[0]<<endl;
+		  cout<<"xpeaks[1] = "<<xpeaks[1]<<endl; 
 		   
-		   if (xpeaks[1] < xpeaks[0]) 
+		  if (xpeaks[1] < xpeaks[0]) 
  
-		     { cout<<"we are here"<<endl;
-		       k[0] =  xpeaks[0]; xpeaks[0] = xpeaks[1]; xpeaks[1] = k[0];}
-		   cout<<" xpeaks[0] ="<<xpeaks[0]<<endl;
-		   cout<<"xpeaks[1] = "<<xpeaks[1]<<endl;
+		    { cout<<"we are here"<<endl;
+		      k[0] =  xpeaks[0]; xpeaks[0] = xpeaks[1]; xpeaks[1] = k[0];}
+		  cout<<" xpeaks[0] ="<<xpeaks[0]<<endl;
+		  cout<<"xpeaks[1] = "<<xpeaks[1]<<endl;
 		    
-		   
+	   
 		  //Use the peak to fit the SPE with a Gaussian to determine the mean
                   if(fFullShow) PulseInt_quad[iquad][ipmt]->Draw("E");
-		  Gauss2->SetRange(0,18);
+		  Gauss2->SetRange(0,16);
                   Gauss2->SetParameter(0, 200);
 		  Gauss2->SetParameter(1, xpeaks[0]);
 		  Gauss2->SetParameter(2, 5.25);
@@ -708,7 +716,7 @@ void calibration::Terminate()
 		  fFullShow ? PulseInt_quad[iquad][ipmt]->Fit("Gauss2","RQN") : PulseInt_quad[iquad][ipmt]->Fit("Gauss2","RQN");		
          	  //  if (fFullShow) PulseInt_quad[iquad][ipmt]->GetXaxis()->SetRangeUser(0,50);
 	
-                 //Again Use the peak to fit the SPE with a Gaussian to determine the mean
+		  //Again Use the peak to fit the SPE with a Gaussian to determine the mean
                   Gauss2->SetParameter(0,Gauss2->GetParameter(0));
 		  Gauss2->SetParameter(1,Gauss2->GetParameter(1));
 		  Gauss2->SetParameter(2,Gauss2->GetParameter(2));
@@ -722,66 +730,57 @@ void calibration::Terminate()
 		  // Draw the Gauss fuctions on first & second peaks using parameters from Gauss2 fit  
 		  TF1 *g1 = new TF1("g1","gaus",0,35);
 		  if (xpeaks[1] < xpeaks[0]) {
-                  g1->SetParameter(0,Gauss2->GetParameter(3));
-		  g1->SetParameter(1,Gauss2->GetParameter(4));
-		  g1->SetParameter(2,Gauss2->GetParameter(5));
-                  g1->SetLineColor(1);
-                  g1->Draw("same");}
+		    g1->SetParameter(0,Gauss2->GetParameter(3));
+		    g1->SetParameter(1,Gauss2->GetParameter(4));
+		    g1->SetParameter(2,Gauss2->GetParameter(5));
+		    g1->SetLineColor(1);
+		    g1->Draw("same");}
 		  // cout<<"g1  = "<<g1->GetParameter(1);
 
 
 		  else {g1->SetParameter(0,Gauss2->GetParameter(0));
-		  g1->SetParameter(1,Gauss2->GetParameter(1));
-		  g1->SetParameter(2,Gauss2->GetParameter(2));
-                  g1->SetLineColor(1);
-                  g1->Draw("same");}
+		    g1->SetParameter(1,Gauss2->GetParameter(1));
+		    g1->SetParameter(2,Gauss2->GetParameter(2));
+		    g1->SetLineColor(1);
+		    g1->Draw("same");}
 
 	       	  TF1 *g2 = new TF1("g2","gaus",0,35);
                   if (xpeaks[1] < xpeaks[0]) {
-                  g2->SetParameter(0,Gauss2->GetParameter(0));
-		  g2->SetParameter(1,Gauss2->GetParameter(1));	
-		  g2->SetParameter(2,Gauss2->GetParameter(2));
-                  g2->SetParLimits(2, 0.5, 10.0);
-                  g2->SetLineColor(3);	      	       
-		  g2->Draw("same");}
+		    g2->SetParameter(0,Gauss2->GetParameter(0));
+		    g2->SetParameter(1,Gauss2->GetParameter(1));	
+		    g2->SetParameter(2,Gauss2->GetParameter(2));
+		    g2->SetParLimits(2, 0.5, 10.0);
+		    g2->SetLineColor(3);	      	       
+		    g2->Draw("same");}
     
 		  else {
-                  g2->SetParameter(0,Gauss2->GetParameter(3));
-		  g2->SetParameter(1,Gauss2->GetParameter(4));	
-		  g2->SetParameter(2,Gauss2->GetParameter(5));
-                  g2->SetParLimits(2, 0.5, 10.0);
-                  g2->SetLineColor(3);	      	       
-		  g2->Draw("same");} 
+		    g2->SetParameter(0,Gauss2->GetParameter(3));
+		    g2->SetParameter(1,Gauss2->GetParameter(4));	
+		    g2->SetParameter(2,Gauss2->GetParameter(5));
+		    g2->SetParLimits(2, 0.5, 10.0);
+		    g2->SetLineColor(3);	      	       
+		    g2->Draw("same");} 
 
-		  if (xpeaks[0] > 2.0 && PulseInt_quad[iquad][ipmt]->GetBinContent(PulseInt_quad[iquad][ipmt]->GetXaxis()->FindBin(xpeaks[0])) > 90) mean[ipad-1] = Gauss2->GetParameter(1); 
-		  if (xpeaks[0] > 2.0 && PulseInt_quad[iquad][ipmt]->GetBinContent(PulseInt_quad[iquad][ipmt]->GetXaxis()->FindBin(xpeaks[0])) > 90) SD[ipad-1] = Gauss2->GetParameter(2); 
-		  if (xpeaks[0] > 2.0 && PulseInt_quad[iquad][ipmt]->GetBinContent(PulseInt_quad[iquad][ipmt]->GetXaxis()->FindBin(xpeaks[0])) > 90) RChi2[ipad-1] = Gauss2->GetChisquare()/Gauss2->GetNDF(); 
-		  if (xpeaks[0] > 2.0 && PulseInt_quad[iquad][ipmt]->GetBinContent(PulseInt_quad[iquad][ipmt]->GetXaxis()->FindBin(xpeaks[0])) > 90) mean_err[ipad-1] = Gauss2->GetParError(1);
+		  if (xpeaks[0] > 2.0 && PulseInt_quad[iquad][ipmt]->GetBinContent(PulseInt_quad[iquad][ipmt]->GetXaxis()->FindBin(xpeaks[0])) > 40) mean[ipad-1] = Gauss2->GetParameter(1); 
+		  if (xpeaks[0] > 2.0 && PulseInt_quad[iquad][ipmt]->GetBinContent(PulseInt_quad[iquad][ipmt]->GetXaxis()->FindBin(xpeaks[0])) > 40) SD[ipad-1] = Gauss2->GetParameter(2); 
+		  if (xpeaks[0] > 2.0 && PulseInt_quad[iquad][ipmt]->GetBinContent(PulseInt_quad[iquad][ipmt]->GetXaxis()->FindBin(xpeaks[0])) > 40) RChi2[ipad-1] = Gauss2->GetChisquare()/Gauss2->GetNDF(); 
+		  if (xpeaks[0] > 2.0 && PulseInt_quad[iquad][ipmt]->GetBinContent(PulseInt_quad[iquad][ipmt]->GetXaxis()->FindBin(xpeaks[0])) > 40) mean_err[ipad-1] = Gauss2->GetParError(1);
 
-		   // Set Boolean of whether fit is good or not here
+		  // Set Boolean of whether fit is good or not here
 		  
-		   if (RChi2[ipad-1] < 0.5 || RChi2[ipad-1] > 5) {
+		  if (RChi2[ipad-1] < 0.5 || RChi2[ipad-1] > 15) {
 		    GoodFit[ipad-1] = kFALSE; 
 		    BadFitText->Draw("same");
-		          // cout << "BAD FIT RCHI2 "  << RChi2[ipad-1] << endl;
 		  } 
-		    else if  (RChi2[ipad-1] > 0.5 && RChi2[ipad-1] < 5) {
-		         GoodFit[ipad-1] = kTRUE;
-		         GoodFitText->Draw("same");
-			 //cout << "GOOD FIT RCHI2 "  << RChi2[ipad-1] << endl;
-		    } 
+		  else if  (RChi2[ipad-1] > 0.5 && RChi2[ipad-1] < 15) {
+		    GoodFit[ipad-1] = kTRUE;
+		    GoodFitText->Draw("same");
+		  } 		 
 		  
-		   // cout << xpeaks[0] <<endl;
-		   // cout<< " Amplitude " << PulseInt_quad[iquad][ipmt]->GetBinContent(PulseInt_quad[iquad][ipmt]->GetXaxis()->FindBin(xpeaks[0])) << endl;
-		   // cout<< " SD " <<SD[ipad-1]<<endl;
-		   // cout<<" mean "<<mean[ipad-1]<<endl;  
-		   // cout<<"  error       "<<mean_err[ipad-1]<<endl;
-		   // cout << " Chi2/DoF " << RChi2[ipad-1] << endl;
-		  
-		   ipad++;
+		  ipad++;
 
-                 } 
-		}
+		} 
+	    }
 
 	  
 	  //Obtain the conversion from ADC to NPE by taking the average of the SPE means
@@ -828,182 +827,278 @@ void calibration::Terminate()
 	      fFullShow ? PulseInt[ipmt]->Fit("Gauss1","RQ") : PulseInt[ipmt]->Fit("Gauss1","RQ");
 	      xscale = Gauss1->GetParameter(1);
 	      xscaleErr = Gauss1->GetParError(1);
-	      }	  
+	    }	  
 
 
 	  //Scale full ADC spectra according to the mean of the SPE. This requires filling a new histogram with the same number of bins but scaled min/max
+	  // gStyle->SetOptStat(0);
 	  Int_t nbins;
-	  nbins = (PulseInt[ipmt]->GetXaxis()->GetNbins());
+	  nbins = (PulseInt_poiss[ipmt]->GetXaxis()->GetNbins());
 
-	  //cout<<"nbins = "<<nbins<<endl;
+	  cout<<"nbins ="<<nbins<<endl;
+	  // gStyle->SetOptStat(0000);
 
-	  //With the scale of ADC to NPE create a histogram that has the conversion applied
-	  fscaled[ipmt] = new TH1F(Form("fscaled_PMT%d", ipmt+1), Form("Scaled ADC spectra for PMT%d; NPE; Normalized Counts",ipmt+1), nbins,0.0,5.0);
+ 	  //With the scale of ADC to NPE create a histogram that has the conversion applied
+	  fscaled[ipmt] = new TH1F(Form("fscaled_PMT%d", ipmt+1), Form("Scaled ADC spectra for PMT%d; NPE; Normalized Counts",ipmt+1), nbins,0.0,35.0);
 	  
 	  //Fill this histogram bin by bin
 	  for (Int_t ibin=0; ibin<nbins; ibin++)
 	    {
-	      Double_t y = PulseInt[ipmt]->GetBinContent(ibin);
-	      Double_t x = PulseInt[ipmt]->GetXaxis()->GetBinCenter(ibin);
+	      Double_t y = PulseInt_poiss[ipmt]->GetBinContent(ibin);
+	      Double_t x = PulseInt_poiss[ipmt]->GetXaxis()->GetBinCenter(ibin);
 	      Double_t x_scaled = x/xscale;
 	      Int_t bin_scaled = fscaled[ipmt]->GetXaxis()->FindBin(x_scaled); 
 	      fscaled[ipmt]->SetBinContent(bin_scaled,y);
 	    }
 
 	  //Normalize the histogram for ease of fitting
-	   fscaled[ipmt]->Scale(1.0/fscaled[ipmt]->Integral(), "width");               
+	  fscaled[ipmt]->Scale(1.0/fscaled[ipmt]->Integral(), "width");                           
 
 	  //Begin the removal of the Poisson-like background
-	   if (fFullShow) background_ipmt = new TCanvas(Form("backgrounf_pmt%d",ipmt), Form("NPE spectra for PMT%d with Poisson-like background",ipmt+1));
-	   if (fFullShow) background_ipmt->cd(1);
-	   // Poisson->SetParameter(0, 4);
-	   //  Poisson->SetParameter(1, 0.85);
-	   // Poisson->SetParLimits(0, 0.0, 4.0);
-	   // Poisson->SetParLimits(1, 0.8, 0.9);
-	   //fFullShow ? fscaled[ipmt]->Fit("Poisson","RQN") : fscaled[ipmt]->Fit("Poisson","RQN");
-	   // Poisson->SetParameter(0, Poisson->GetParameter(0));
-	   // Poisson->SetParameter(1, Poisson->GetParameter(1));
-	   // Poisson->SetParLimits(0, 0.0, 4.0);
-	   //Poisson->SetParLimits(1, 0.1, 1.2);
-	   
-	   //  fFullShow ? fscaled[ipmt]->Fit("Poisson","RQN") : fscaled[ipmt]->Fit("Poisson","RQN");
-	   //  TF1 *g3 = new TF1("g3","Gauss3",0,2);
-	   sum_gauss_poisson->SetRange(0,5.0);
-	   sum_gauss_poisson->SetParameter(0,0.6);
-	   sum_gauss_poisson->SetParameter(1,1.0);	
-	   sum_gauss_poisson->SetParameter(2,0.39);
-	   sum_gauss_poisson->SetParameter(3,0.15);
-	   sum_gauss_poisson->SetParameter(4,2);
-	   sum_gauss_poisson->SetParameter(5,0.24);
-	   sum_gauss_poisson->SetParameter(6,0.12);
-	   sum_gauss_poisson->SetParameter(7,3.0);
-	   sum_gauss_poisson->SetParameter(8,0.075);
-	   sum_gauss_poisson->SetParameter(9,4.0);
-	   sum_gauss_poisson->SetParameter(10,0.15);
-
-	   // cout<<" error in scale "<<xscaleErr<<endl;
-	   // sum_gauss_poisson->SetParLimits(0, 0 ,1.2);
-	   sum_gauss_poisson->SetParLimits(1, 1 - 2*xscaleErr, 1 + 2*xscaleErr);
-	   // sum_gauss_poisson->SetParLimits(2, 0.1, 0.3);
-	   //sum_gauss_poisson->SetParLimits(3, 0, 0.4);
-	   sum_gauss_poisson->SetParLimits(4, 2 - 3*xscaleErr,2 +  3*xscaleErr);
-	   // sum_gauss_poisson->SetParLimits(5, 0, 3);
-	   // sum_gauss_poisson->SetParLimits(6, 0.0, 0.24);
-	   sum_gauss_poisson->SetParLimits(7, 3 - 3*xscaleErr, 3 + 3*xscaleErr);
-	   // sum_gauss_poisson->SetParLimits(8, 0.0, 3);
-	   // sum_gauss_poisson->SetParLimits(9, 3.9, 4.2);
-	   // sum_gauss_poisson->SetParLimits(10, 0.0,0.8);*/
-	   // sum_gauss_poisson->SetLineColor(2);	 
-	   fFullShow ? fscaled[ipmt]->Fit("sum_gauss_poisson","RQN") : fscaled[ipmt]->Fit("sum_gauss_poisson","RQN");
-	   /*  cout<< "Gauss3 (0) = "<<Gauss3->GetParameter(0)<<endl;
-	       cout<< "Gauss3 (1) = "<<Gauss3->GetParameter(1)<<endl;
-	       cout<< "Gauss3 (2) = "<<Gauss3->GetParameter(2)<<endl;
-	       cout<< "Gauss3 (3) = "<<Gauss3->GetParameter(3)<<endl;
-	       cout<< "Gauss3 (4) = "<<Gauss3->GetParameter(4)<<endl;
-	       cout<< "Gauss3 (5) = "<<Gauss3->GetParameter(5)<<endl;
-	       cout<< "Gauss3 (6) = "<<Gauss3->GetParameter(6)<<endl;
-	       cout<< "Gauss3 (7) = "<<Gauss3->GetParameter(7)<<endl;
-	       cout<< "Gauss3 (8) = "<<Gauss3->GetParameter(8)<<endl;*/
-
-	   sum_gauss_poisson->SetParameter(0,sum_gauss_poisson->GetParameter(0));
-	   sum_gauss_poisson->SetParameter(1,sum_gauss_poisson->GetParameter(1));	
-	   sum_gauss_poisson->SetParameter(2,sum_gauss_poisson->GetParameter(2));
-	   sum_gauss_poisson->SetParameter(3,sum_gauss_poisson->GetParameter(3));
-	   sum_gauss_poisson->SetParameter(4,sum_gauss_poisson->GetParameter(4));
-	   sum_gauss_poisson->SetParameter(5,sum_gauss_poisson->GetParameter(5));
-	   sum_gauss_poisson->SetParameter(6,sum_gauss_poisson->GetParameter(6));
-	   sum_gauss_poisson->SetParameter(7,sum_gauss_poisson->GetParameter(7));
-	   sum_gauss_poisson->SetParameter(8,sum_gauss_poisson->GetParameter(8));
-	   sum_gauss_poisson->SetParameter(9,sum_gauss_poisson->GetParameter(9));
-	   sum_gauss_poisson->SetParameter(10,sum_gauss_poisson->GetParameter(10));
-	   sum_gauss_poisson->SetLineColor(5);
-
-	   fFullShow ? fscaled[ipmt]->Fit("sum_gauss_poisson","RQ") : fscaled[ipmt]->Fit("sum_gauss_poisson","RQ");
-
-	   TF1 *g3 = new TF1("g3","gaus",0,5.0);
-	   {  
-	     g3->SetParameter(0,sum_gauss_poisson->GetParameter(0));
-	     g3->SetParameter(1,sum_gauss_poisson->GetParameter(1));
-	     g3->SetParameter(2,sum_gauss_poisson->GetParameter(2));
-	     g3->SetLineColor(1);
-	     g3->Draw("same");}
-	   TF1 *g4 = new TF1("g4","gaus",0,5.0);
-	   {
-	     g4->SetParameter(0,sum_gauss_poisson->GetParameter(3));
-	     g4->SetParameter(1,sum_gauss_poisson->GetParameter(4));
-	     g4->SetParameter(2,sum_gauss_poisson->GetParameter(5));
-	     g4->SetLineColor(3);
-	     g4->Draw("same");}
-	   TF1 *g5 = new TF1("g5","gaus",0,5.0);
-	   {
-                  g5->SetParameter(0,sum_gauss_poisson->GetParameter(6));
-		  g5->SetParameter(1,sum_gauss_poisson->GetParameter(7));
-		  g5->SetParameter(2,sum_gauss_poisson->GetParameter(8));
-                  g5->SetLineColor(4);
-                  g5->Draw("same");}
-
-	    /*  Poisson->SetRange(3.1, 5);
-
-            Poisson->SetParameter(0, sum_gauss_poisson->GetParameter(9));
-	    Poisson->SetParameter(1, sum_gauss_poisson->GetParameter(10));
-	    // Poisson->SetParLimits(0, 0.0, 4.0);
-	    Poisson->SetParLimits(1, 0.0,0.9);
-	    Poisson->Draw("same");*/
-
-            TF1 *poiss = new TF1("poiss","[1]*TMath::Poisson(x,[0])",0.0,5.0);{
-            poiss->SetParameter(0,sum_gauss_poisson->GetParameter(9));
-            poiss->SetParameter(1,sum_gauss_poisson->GetParameter(10));
-	    poiss->Draw("same"); }
-
-	    /* {
-                  g6->SetParameter(0,sum_gauss_poisson->GetParameter(9));
-		  g6->SetParameter(1,sum_gauss_poisson->GetParameter(10));	       
-                  g6->SetLineColor(5);
-                  g6->Draw("same");}*/
+	  if (fFullShow) background_ipmt = new TCanvas(Form("backgrounf_pmt%d",ipmt), Form("NPE spectra for PMT%d with Poisson-like background",ipmt+1));
+	  
 
 
-	  //Make and fill histogram with the background removed
-	    /*fscaled_nobackground[ipmt] = new TH1F(Form("fscaled_nobackground_pmt%d", ipmt+1), Form("NPE spectra background removed for PMT%d; NPE; Normalized Counts",ipmt+1), 200, 0, 15);
+	  // background_ipmt->Divide(2,1);
+	  if (fFullShow) background_ipmt->cd(1);	  
 
-	  for (Int_t ibin=1; ibin<nbins; ibin++)
-	    {
-	      Double_t y = Poisson->Eval(fscaled[ipmt]->GetXaxis()->GetBinCenter(ibin));
-	      Double_t y2 = fscaled[ipmt]->GetBinContent(ibin) - y;
-	      //if (ipmt == 1) cout << "Poisson Value: " << y << "\nfscaled Value: " << fscaled[ipmt]->GetBinContent(ibin) << endl;
-	      fscaled_nobackground[ipmt]->SetBinContent(ibin,y2);
-	      }*/
+	  // if (fFullShow) background_ipmt->cd(1);	  
+      	 
+	  Poisson->SetRange(7,35);
+	  Poisson->SetParameter(0,9.0);
+	  Poisson->SetParameter(1, 0.40);
 
-	  if (fFullShow) final_spectra_ipmt = new TCanvas(Form("final_Spectra_%d",ipmt), Form("NPE spectra Background Removed for PMT%d",ipmt+1));
-	  // if (fFullShow) final_spectra_ipmt->Divide(2,1);
-	  //if (fFullShow) final_spectra_ipmt->cd(1);
-          /*Gauss3->SetRange(0,3.5);
-	  Gauss3->SetParameter(0,0.5);
-	  Gauss3->SetParameter(1,1.5);
-	  Gauss3->SetParameter(2,0.2);
-	  Gauss3->SetParameter(3,0.2); 
-	  Gauss3->SetParameter(4,2.0);
-          Gauss3->SetParameter(5,0.3);
-          Gauss3->SetParameter(6,0.05);
-          Gauss3->SetParameter(7,3.0);
-          Gauss3->SetParameter(8,0.05);
-	  Gauss3->SetParLimits(1, 0.5, 1.5);
-	  Gauss3->SetParLimits(2, 0.0, 2.5);
-	  Gauss3->SetParLimits(3, 0.0, 0.5);
-	  Gauss3->SetParLimits(4, 1.5, 2.5);
-	  Gauss3->SetParLimits(5, 0.2, 0.6);
-	  Gauss3->SetParLimits(6, 0.0, 0.2);
-	  Gauss3->SetParLimits(7, 2.5, 3.5);
-	  Gauss3->SetParLimits(8, 0.02, 0.5);
-	  fFullShow ? fscaled_nobackground[ipmt]->Fit("Gauss3","RQ") : fscaled_nobackground[ipmt]->Fit("Gauss3","RQ");
-	  if (fFullShow) fscaled_nobackground[ipmt]->GetXaxis()->SetRangeUser(0,4);
-	  if (fFullShow) fscaled_nobackground[ipmt]->GetYaxis()->SetRangeUser(0,0.6);*/
+	  fFullShow ? fscaled[ipmt]->Fit("Poisson","RQBN") : fscaled[ipmt]->Fit("Poisson","RQBN");
+
+	  sum_gauss_poisson->SetRange(0,35.0);
+	  sum_gauss_poisson->SetParameter(0,0.6);
+	  sum_gauss_poisson->SetParameter(1,1.0);	
+	  sum_gauss_poisson->SetParameter(2,0.39);
+	  sum_gauss_poisson->SetParameter(3,0.15);
+	  sum_gauss_poisson->SetParameter(4,2);
+	  sum_gauss_poisson->SetParameter(5,0.24);
+	  sum_gauss_poisson->SetParameter(6,0.12);
+	  sum_gauss_poisson->SetParameter(7,3.0);
+	  sum_gauss_poisson->SetParameter(8,0.75);
+	  sum_gauss_poisson->SetParameter(9,0.12);
+	  sum_gauss_poisson->SetParameter(10,4.0);
+	  sum_gauss_poisson->SetParameter(11,0.75);
+	  sum_gauss_poisson->SetParameter(12,8.0);
+	  sum_gauss_poisson->SetParameter(13,0.7);
+	  sum_gauss_poisson->SetParameter(14, Poisson->GetParameter(0));  
+	  sum_gauss_poisson->SetParameter(15, Poisson->GetParameter(1));
+ 
+	  // cout<<" error in scale "<<xscaleErr<<endl;
+	  // sum_gauss_poisson->SetParLimits(0, 0 ,1.2);
+	  sum_gauss_poisson->SetParLimits(1, 1 - 3*xscaleErr, 1 + 3*xscaleErr);
+	  // sum_gauss_poisson->SetParLimits(2, 0.1, 0.3);
+	  //sum_gauss_poisson->SetParLimits(3, 0, 0.4);
+	  sum_gauss_poisson->SetParLimits(4, 2 - 3*xscaleErr,2 +  3*xscaleErr);
+	  // sum_gauss_poisson->SetParLimits(5, 0, 3);
+	  // sum_gauss_poisson->SetParLimits(6, 0.0, 0.24);
+	  sum_gauss_poisson->SetParLimits(7, 3 - 3*xscaleErr, 3 + 3*xscaleErr);
+	  // sum_gauss_poisson->SetParLimits(8, 0.0, 3);
+	  // sum_gauss_poisson->SetParLimits(9, 3.9, 4.2);
+	  // sum_gauss_poisson->SetParLimits(10, 0.0,0.8);
+	  // sum_gauss_poisson->SetLineColor(2);
 	 
-	  //Create a TGraphErrors to determine the spacing of the NPE
-          gROOT->SetStyle("111111");
+	  fFullShow ? fscaled[ipmt]->Fit("sum_gauss_poisson","RQN") : fscaled[ipmt]->Fit("sum_gauss_poisson","RQN");
+	  
+	  sum_gauss_poisson->SetParameter(0,sum_gauss_poisson->GetParameter(0));
+	  sum_gauss_poisson->SetParameter(1,sum_gauss_poisson->GetParameter(1));	
+	  sum_gauss_poisson->SetParameter(2,sum_gauss_poisson->GetParameter(2));
+	  sum_gauss_poisson->SetParameter(3,sum_gauss_poisson->GetParameter(3));
+	  sum_gauss_poisson->SetParameter(4,sum_gauss_poisson->GetParameter(4));
+	  sum_gauss_poisson->SetParameter(5,sum_gauss_poisson->GetParameter(5));
+	  sum_gauss_poisson->SetParameter(6,sum_gauss_poisson->GetParameter(6));
+	  sum_gauss_poisson->SetParameter(7,sum_gauss_poisson->GetParameter(7));
+	  sum_gauss_poisson->SetParameter(8,sum_gauss_poisson->GetParameter(8));
+	  sum_gauss_poisson->SetParameter(9,sum_gauss_poisson->GetParameter(9));
+	  sum_gauss_poisson->SetParameter(10,sum_gauss_poisson->GetParameter(10));
+	  sum_gauss_poisson->SetParameter(11,sum_gauss_poisson->GetParameter(11));
+	  sum_gauss_poisson->SetParameter(12,sum_gauss_poisson->GetParameter(12));
+	  sum_gauss_poisson->SetParameter(13,sum_gauss_poisson->GetParameter(13));
+	  sum_gauss_poisson->SetParameter(14,sum_gauss_poisson->GetParameter(14));
+	  sum_gauss_poisson->SetParameter(15,sum_gauss_poisson->GetParameter(15));
+	  sum_gauss_poisson->SetLineColor(5);
+	  //  gStyle->SetOptFit(0);
 
-	  y_npe[0] = sum_gauss_poisson->GetParameter(1), y_npe[1] =  sum_gauss_poisson->GetParameter(4), y_npe[2] = sum_gauss_poisson->GetParameter(7);
-	  y_err[0] =  sum_gauss_poisson->GetParError(1), y_err[1] = sum_gauss_poisson->GetParError(4), y_err[2] = sum_gauss_poisson->GetParError(7);
-	  x_npe[0] = 1, x_npe[1] = 2, x_npe[2] = 3;
+	  fFullShow ? fscaled[ipmt]->Fit("sum_gauss_poisson","RQ+") : fscaled[ipmt]->Fit("sum_gauss_poisson","RQ+");
+
+	  //  TF1 *poiss3 = new TF1("poiss3","[1]*TMath::Poisson(x,[0])",7.0,35.0);
+
+	 
+	  // fFullShow ? fscaled[ipmt]->Fit("Poisson","RQ+") : fscaled[ipmt]->Fit("Poisson","RQ+");
+	  // Text for display the parameters
+	  Double_t  p0, p0_err, p1, p1_err, p2, p2_err, p3, p3_err, p4, p4_err, p5, p5_err, p6, p6_err, p7, p7_err, p8, p8_err,p9,p9_err,p10,p10_err,p11,p11_err,p12, p12_err, p13, p13_err, p14, p14_err, p15, p15_err, Chi, NDF;
+          Chi = sum_gauss_poisson->GetChisquare();
+          NDF = sum_gauss_poisson->GetNDF(); 
+	  p0 = sum_gauss_poisson->GetParameter(0);
+	  p0_err = sum_gauss_poisson->GetParError(0);
+	  p1 = sum_gauss_poisson->GetParameter(1);
+	  p1_err = sum_gauss_poisson->GetParError(1);
+	  p2 = sum_gauss_poisson->GetParameter(2);
+	  p2_err = sum_gauss_poisson->GetParError(2);
+	  p3 = sum_gauss_poisson->GetParameter(3);
+	  p3_err = sum_gauss_poisson->GetParError(3);
+	  p4 = sum_gauss_poisson->GetParameter(4);
+	  p4_err = sum_gauss_poisson->GetParError(4);
+	  p5 = sum_gauss_poisson->GetParameter(5);
+	  p5_err = sum_gauss_poisson->GetParError(5);
+	  p6 = sum_gauss_poisson->GetParameter(6);
+	  p6_err = sum_gauss_poisson->GetParError(6);
+	  p7 = sum_gauss_poisson->GetParameter(7);
+	  p7_err = sum_gauss_poisson->GetParError(7);
+	  p8 = sum_gauss_poisson->GetParameter(8);
+	  p8_err = sum_gauss_poisson->GetParError(8);
+	  p9 = sum_gauss_poisson->GetParameter(9);
+	  p9_err = sum_gauss_poisson->GetParError(9);
+	  p10 = sum_gauss_poisson->GetParameter(10);
+	  p10_err = sum_gauss_poisson->GetParError(10);
+	  p11 = sum_gauss_poisson->GetParameter(11);
+	  p11_err = sum_gauss_poisson->GetParError(11);
+	  p12 = sum_gauss_poisson->GetParameter(12);
+	  p12_err = sum_gauss_poisson->GetParError(12);
+	  p13 = sum_gauss_poisson->GetParameter(13);
+	  p13_err = sum_gauss_poisson->GetParError(13);
+	  p14 = sum_gauss_poisson->GetParameter(14);
+	  p14_err = sum_gauss_poisson->GetParError(14);
+	  p15 = sum_gauss_poisson->GetParameter(15);
+	  p15_err = sum_gauss_poisson->GetParError(15);
+
+	  TPaveText *t1 = new TPaveText(0.70, 0.35, 0.9, 0.9, "NDC");{
+	    t1->SetTextColor(kBlack);
+	    t1->AddText(Form(" Chi/NDF     = %0f #/ %0f", Chi, NDF ));
+	    t1->AddText(Form(" Amplitude 1 = %0f #pm %0f", p0, p0_err));
+	    t1->AddText(Form(" Mean 1      = %0f #pm %0f ", p1, p1_err ));
+	    t1->AddText(Form(" Std. Dev. 1 = %0f #pm %0f", p2, p2_err ));
+	    t1->AddText(Form(" Amplitude 2 = %0f #pm %0f", p3, p3_err ));
+	    t1->AddText(Form(" Mean 2      = %0f #pm %0f ", p4, p4_err ));
+	    t1->AddText(Form(" Std. Dev. 2 = %0f #pm %0f ", p5, p5_err ));
+	    t1->AddText(Form(" Amplitude 3 = %0f #pm %0f ", p6, p6_err ));
+	    t1->AddText(Form(" Mean 3      = %0f #pm %0f ", p7, p7_err ));
+	    t1->AddText(Form(" Std. Dev. 3 = %0f #pm %0f ", p8, p8_err ));
+	    t1->AddText(Form(" Amplitude 4 = %0f #pm %0f ", p9, p9_err ));
+	    t1->AddText(Form(" Mean 4      = %0f #pm %0f ", p10, p10_err ));
+	    t1->AddText(Form(" Std. Dev 4  = %0f #pm %0f ", p11, p11_err ));	    
+	    t1->Draw();}
+
+
+	  //Draw guas function on one, two and third  photo electron peaks 
+	  TF1 *g3 = new TF1("g3","gaus",0,35.0);
+	  {  
+	    g3->SetParameter(0,sum_gauss_poisson->GetParameter(0));
+	    g3->SetParameter(1,sum_gauss_poisson->GetParameter(1));
+	    g3->SetParameter(2,sum_gauss_poisson->GetParameter(2));
+	    g3->SetLineColor(1);
+	    g3->Draw("same");}
+	  TF1 *g4 = new TF1("g4","gaus",0,35.0);
+	  {
+	    g4->SetParameter(0,sum_gauss_poisson->GetParameter(3));
+	    g4->SetParameter(1,sum_gauss_poisson->GetParameter(4));
+	    g4->SetParameter(2,sum_gauss_poisson->GetParameter(5));
+	    g4->SetLineColor(3);
+	    g4->Draw("same");}
+	  TF1 *g5 = new TF1("g5","gaus",0,35.0);
+	  {
+	    g5->SetParameter(0,sum_gauss_poisson->GetParameter(6));
+	    g5->SetParameter(1,sum_gauss_poisson->GetParameter(7));
+	    g5->SetParameter(2,sum_gauss_poisson->GetParameter(8));
+	    g5->SetLineColor(4);
+	    g5->Draw("same");}
+
+	  TF1 *g6 = new TF1("g6","gaus",0,35.0);
+	  {
+	    g6->SetParameter(0,sum_gauss_poisson->GetParameter(9));
+	    g6->SetParameter(1,sum_gauss_poisson->GetParameter(10));
+	    g6->SetParameter(2,sum_gauss_poisson->GetParameter(11));
+	    g6->SetLineColor(2);
+	    g6->Draw("same");}
+
+	  //TF1 *poiss = new TF1("poiss","Poisson");
+	   TF1 *poiss = new TF1("poiss","[1]*TMath::Poisson(x,[0])",0.0,35.0);
+
+	   {poiss->SetRange(0,35);
+	     poiss->SetParameter(0,sum_gauss_poisson->GetParameter(12));
+	     poiss->SetParameter(1,sum_gauss_poisson->GetParameter(13));
+	     poiss->SetLineColor(6);
+	     poiss->Draw("same"); }
+
+	   TF1 *poiss2 = new TF1("poiss2","[1]*TMath::Poisson(x,[0])",0.0,35.0);
+
+	   {//poiss->SetRange(0,35);
+	     poiss2->SetParameter(0,sum_gauss_poisson->GetParameter(14));
+	     poiss2->SetParameter(1,sum_gauss_poisson->GetParameter(15));
+	     poiss2->SetLineColor(8);
+	     poiss2->Draw("same"); }
+	  
+
+	   if (fFullShow) Full_zoom_fit_ipmt = new TCanvas(Form("Full_zoom_fit_pmt%d",ipmt), Form("NPE spectra for PMT%d with all fits",ipmt+1));
+
+	   fscaled[ipmt]->GetXaxis()->SetRangeUser(0,5); 
+
+	   TH1* hc = (TH1*)fscaled[ipmt]->Clone();	  
+	   if (fFullShow) Full_zoom_fit_ipmt->cd(1);
+	   hc->Draw();
+	  
+	   /*TF1 *g7 = new TF1("g7","gaus",0,35.0);
+	     {  
+	     g7->SetParameter(0,sum_gauss_poisson->GetParameter(0));
+	     g7->SetParameter(1,sum_gauss_poisson->GetParameter(1));
+	     g7->SetParameter(2,sum_gauss_poisson->GetParameter(2));
+	     g7->SetLineColor(1);
+	     g7->Draw("same");}
+	   TF1 *g8 = new TF1("g8","gaus",0,35.0);
+	   {
+	     g8->SetParameter(0,sum_gauss_poisson->GetParameter(3));
+	     g8->SetParameter(1,sum_gauss_poisson->GetParameter(4));
+	     g8->SetParameter(2,sum_gauss_poisson->GetParameter(5));
+	     g8->SetLineColor(3);
+	     g8->Draw("same");}
+	   TF1 *g9 = new TF1("g9","gaus",0,35.0);
+	   {
+	     g9->SetParameter(0,sum_gauss_poisson->GetParameter(6));
+	     g9->SetParameter(1,sum_gauss_poisson->GetParameter(7));
+	     g9->SetParameter(2,sum_gauss_poisson->GetParameter(8));
+	     g9->SetLineColor(4);
+	     g9->Draw("same");}
+
+	   TF1 *g10 = new TF1("g10","gaus",0,35.0);
+	   {
+	     g10->SetParameter(0,sum_gauss_poisson->GetParameter(9));
+	     g10->SetParameter(1,sum_gauss_poisson->GetParameter(10));
+	     g10->SetParameter(2,sum_gauss_poisson->GetParameter(11));
+	     g10->SetLineColor(2);
+	     g10->Draw("same");}
+
+	   //TF1 *poiss = new TF1("poiss","Poisson");
+	   TF1 *poiss3 = new TF1("poiss3","[1]*TMath::Poisson(x,[0])",0.0,35.0);
+
+	   {
+	     poiss3->SetRange(0,35);
+	     poiss3->SetParameter(0,sum_gauss_poisson->GetParameter(12));
+	     poiss3->SetParameter(1,sum_gauss_poisson->GetParameter(13));
+	     poiss3->SetLineColor(6);
+	     poiss3->Draw("same"); }
+
+	   TF1 *poiss4 = new TF1("poiss4","[1]*TMath::Poisson(x,[0])",0.0,35.0);
+
+	   {//poiss->SetRange(0,35);
+	     poiss4->SetParameter(0,sum_gauss_poisson->GetParameter(14));
+	     poiss4->SetParameter(1,sum_gauss_poisson->GetParameter(15));
+	     poiss4->SetLineColor(8);
+	     poiss4->Draw("same"); }*/
+	  
+	   fscaled[ipmt]->GetXaxis()->SetRangeUser(0,35); 
+
+
+	   if (fFullShow) final_spectra_ipmt = new TCanvas(Form("final_Spectra_%d",ipmt), Form("NPE spectra Background Removed for PMT%d",ipmt+1));
+
+
+	   y_npe[0] = sum_gauss_poisson->GetParameter(1), y_npe[1] =  sum_gauss_poisson->GetParameter(4), y_npe[2] = sum_gauss_poisson->GetParameter(7);
+	   y_err[0] = xscaleErr + p1_err, y_err[1] = xscaleErr + p4_err, y_err[2] = xscaleErr + p7_err;
+	   x_npe[0] = 1, x_npe[1] = 2, x_npe[2] = 3;
+
 	  TGraphErrors *gr_npe = new TGraphErrors(3, x_npe, y_npe, x_err, y_err);
           gr_npe->GetXaxis()->SetLimits(0, 5);
           gr_npe->SetMinimum(0);
@@ -1018,16 +1113,7 @@ void calibration::Terminate()
           Linear->SetParameter(1.0, 0.0);
 
 	  if (fFullShow) gr_npe->Draw("A*"); 
-
-	  //  fFullShow ? gr_npe->Fit("Linear","RQ+") : gr_npe->Fit("Linear","RQ+");
-     
-	  //Plot this graph with the NPE spectra
-	  // if (fFullShow) final_spectra_ipmt->cd(1);
-	  // Linear->SetParameter(0.0, 1.0);
-	  // Linear->SetParameter(1.0, 0.0);
-
-	  // To check the linearfit with linear function making intercept zero
-
+      
 	  TF1 *gl = new TF1("gl","[0]*x", 0.0,5.0);
 	  //  gl->SetRange(-2.0,4.0);
  
@@ -1056,17 +1142,16 @@ void calibration::Terminate()
 
  	  calibration_mk1[ipmt] = xscale;
 	  calibration_mk1Err[ipmt] = xscaleErr;
-	  pmt_calib[ipmt] = abs(1.0 -sum_gauss_poisson->GetParameter(1));
+	  pmt_calib[ipmt] = abs(1.0 - sum_gauss_poisson->GetParameter(1));
 
 	   //Initial calibration constant has been obtained. Now I multiply it by the slope of the spacing of the NPE (should be approx. 1) for a second estimate
 
-	  Double_t xscale_mk2 = xscale * Linear->GetParameter(0);  
+	  Double_t xscale_mk2 = xscale * p1;  
 
-	  //  cout<<" slope of linear fit"<<Linear->GetParameter(0)<<endl;     
-	  // Double_t xscale_mk2Err = Sqrt(Power(xscaleErr*Linear->GetParameter(0),2) +  Power(xscale*Linear->GetParError(0),2)); 
-         Double_t xscale_mk2Err = (Sqrt(Power(xscaleErr,2) +  Power(Linear->GetParError(0),2))); 
+	 Double_t xscale_mk2Err = Sqrt(Power(xscaleErr*p1, 2) +  Power(xscale*p1_err,2)); 
+	 // Double_t xscale_mk2Err = (Sqrt(Power(xscaleErr,2) +  Power(Linear->GetParError(0),2))); 
 	  //Take this new xscale and repeat the exact same procedure as before
-	  fscaled_mk2[ipmt] = new TH1F(Form("fhgc_scaled_mk2_PMT%d", ipmt+1), Form("Scaled ADC spectra for PMT%d; NPE; Normalized Counts",ipmt+1), 200, 0, 5.0);
+	 /* fscaled_mk2[ipmt] = new TH1F(Form("fhgc_scaled_mk2_PMT%d", ipmt+1), Form("Scaled ADC spectra for PMT%d; NPE; Normalized Counts",ipmt+1), 200, 0, 30.0);
 	 
 	  //Fill this histogram bin by bin
 	  for (Int_t ibin=0; ibin<nbins; ibin++)
@@ -1083,12 +1168,12 @@ void calibration::Terminate()
 
 	  //Begin the removal of the Poisson-like background
 	  if (fFullShow) background_mk2_ipmt = new TCanvas(Form("background_mk2_pmt%d",ipmt), Form("NPE spectra for PMT%d with Poisson-like background",ipmt+1));
-	  if (fFullShow) background_mk2_ipmt->cd(1);
+	  if (fFullShow) background_mk2_ipmt->cd(1);*/
 	  /*  Poisson->SetParameter(0, 2);
 	  Poisson->SetParameter(1, 2.0);
 	  Poisson->SetParLimits(0, 4.0, 1.0);
 	  fFullShow ? fscaled_mk2[ipmt]->Fit("Poisson","RQ"):fscaled_mk2[ipmt]->Fit("Poisson","RQ");*/
- if (fFullShow) background_ipmt->cd(1);
+	 // if (fFullShow) background_ipmt->cd(1);
  // Poisson->SetParameter(0, 4);
  // Poisson->SetParameter(1, 0.85);
 	     // Poisson->SetParLimits(0, 0.0, 4.0);
@@ -1101,7 +1186,7 @@ void calibration::Terminate()
 	   
 	    //  fFullShow ? fscaled[ipmt]->Fit("Poisson","RQN") : fscaled[ipmt]->Fit("Poisson","RQN");
 	    //  TF1 *g3 = new TF1("g3","Gauss3",0,2);
-	          sum_gauss_poisson->SetRange(0,5.0);
+	 /* sum_gauss_poisson->SetRange(0,30.0);
                   sum_gauss_poisson->SetParameter(0,0.6);
 		  sum_gauss_poisson->SetParameter(1,0.95);	
 		  sum_gauss_poisson->SetParameter(2,0.39);
@@ -1112,7 +1197,7 @@ void calibration::Terminate()
 		  sum_gauss_poisson->SetParameter(7,3.0);
 		  sum_gauss_poisson->SetParameter(8,0.075);
 		  sum_gauss_poisson->SetParameter(9,4.0);
-		  sum_gauss_poisson->SetParameter(10,0.15);
+		  sum_gauss_poisson->SetParameter(10,0.15);*/
 
 		  /* sum_gauss_poisson->SetParLimits(0, 0 ,1.2);
                   sum_gauss_poisson->SetParLimits(1, 0.8,1.1 );
@@ -1126,7 +1211,7 @@ void calibration::Terminate()
 		  sum_gauss_poisson->SetParLimits(9, 3.9, 4.2);
 		  sum_gauss_poisson->SetParLimits(10, 0.0,0.8);*/
 	       	  // sum_gauss_poisson->SetLineColor(2);	 
-	     fFullShow ? fscaled_mk2[ipmt]->Fit("sum_gauss_poisson","RQN") : fscaled_mk2[ipmt]->Fit("sum_gauss_poisson","RQN");
+		  // fFullShow ? fscaled_mk2[ipmt]->Fit("sum_gauss_poisson","RQN") : fscaled_mk2[ipmt]->Fit("sum_gauss_poisson","RQN");
 	    /*  cout<< "Gauss3 (0) = "<<Gauss3->GetParameter(0)<<endl;
 	    cout<< "Gauss3 (1) = "<<Gauss3->GetParameter(1)<<endl;
 	    cout<< "Gauss3 (2) = "<<Gauss3->GetParameter(2)<<endl;
@@ -1137,7 +1222,7 @@ void calibration::Terminate()
 	    cout<< "Gauss3 (7) = "<<Gauss3->GetParameter(7)<<endl;
 	    cout<< "Gauss3 (8) = "<<Gauss3->GetParameter(8)<<endl;*/
 
-	    sum_gauss_poisson->SetParameter(0,sum_gauss_poisson->GetParameter(0));
+	 /*  sum_gauss_poisson->SetParameter(0,sum_gauss_poisson->GetParameter(0));
 	    sum_gauss_poisson->SetParameter(1,sum_gauss_poisson->GetParameter(1));	
 	    sum_gauss_poisson->SetParameter(2,sum_gauss_poisson->GetParameter(2));
 	    sum_gauss_poisson->SetParameter(3,sum_gauss_poisson->GetParameter(3));
@@ -1148,31 +1233,37 @@ void calibration::Terminate()
 	    sum_gauss_poisson->SetParameter(8,sum_gauss_poisson->GetParameter(8));
 	    sum_gauss_poisson->SetParameter(9,sum_gauss_poisson->GetParameter(9));
 	    sum_gauss_poisson->SetParameter(10,sum_gauss_poisson->GetParameter(10));
-	    sum_gauss_poisson->SetLineColor(5);
+	    sum_gauss_poisson->SetLineColor(5);*/
 
-	      fFullShow ? fscaled_mk2[ipmt]->Fit("sum_gauss_poisson","RQ") : fscaled_mk2[ipmt]->Fit("sum_gauss_poisson","RQ");
+	    //  fFullShow ? fscaled_mk2[ipmt]->Fit("sum_gauss_poisson","RQ") : fscaled_mk2[ipmt]->Fit("sum_gauss_poisson","RQ");
+	 /*   Gauss1->SetRange(0,18.0);
+	      Gauss1->SetParameter(0,sum_gauss_poisson->GetParameter(0));
+	      Gauss1->SetParameter(1,sum_gauss_poisson->GetParameter(1));
+	      Gauss1->SetParameter(2,sum_gauss_poisson->GetParameter(2));
+	      Gauss1->SetLineColor(1);
+	      Gauss1->Draw("same");*/
 
-            TF1 *g6 = new TF1("g6","gaus",0,5.0);
+	      /* TF1 *g6 = new TF1("g6","gaus",0,30.0);
 	    {  
                   g6->SetParameter(0,sum_gauss_poisson->GetParameter(0));
 		  g6->SetParameter(1,sum_gauss_poisson->GetParameter(1));
 		  g6->SetParameter(2,sum_gauss_poisson->GetParameter(2));
                   g6->SetLineColor(1);
-                  g6->Draw("same");}
-            TF1 *g7 = new TF1("g7","gaus",0,5.0);
+                  g6->Draw("same");}*/
+           /* TF1 *g7 = new TF1("g7","gaus",0,30.0);
 	    {
                   g7->SetParameter(0,sum_gauss_poisson->GetParameter(3));
 		  g7->SetParameter(1,sum_gauss_poisson->GetParameter(4));
 		  g7->SetParameter(2,sum_gauss_poisson->GetParameter(5));
                   g7->SetLineColor(3);
                   g7->Draw("same");}
-            TF1 *g8 = new TF1("g8","gaus",0,5.0);
+            TF1 *g8 = new TF1("g8","gaus",0,30.0);
 	    {
                   g8->SetParameter(0,sum_gauss_poisson->GetParameter(6));
 		  g8->SetParameter(1,sum_gauss_poisson->GetParameter(7));
 		  g8->SetParameter(2,sum_gauss_poisson->GetParameter(8));
                   g8->SetLineColor(4);
-                  g8->Draw("same");}
+                  g8->Draw("same");}*/
 
 	    /*  Poisson->SetRange(3.1, 5);
 
@@ -1182,10 +1273,10 @@ void calibration::Terminate()
 	    Poisson->SetParLimits(1, 0.0,0.9);
 	    Poisson->Draw("same");*/
 
-            TF1 *poiss1 = new TF1("poiss1","[1]*TMath::Poisson(x,[0])",0.0,5.0);{
+	 /*  TF1 *poiss1 = new TF1("poiss1","[1]*TMath::Poisson(x,[0])",0.0,30.0);{
             poiss1->SetParameter(0,sum_gauss_poisson->GetParameter(9));
             poiss1->SetParameter(1,sum_gauss_poisson->GetParameter(10));
-	    poiss1->Draw("same"); }
+	    poiss1->Draw("same"); }*/
 
 	  //Make and fill histogram with the background removed
 	    /* fscaled_mk2_nobackground[ipmt] = new TH1F(Form("fscaled_mk2_nobackground_pmt%d", ipmt+1), Form("NPE spectra background removed for PMT%d; NPE; Normalized Counts",ipmt+1), 200, 0, 30);
@@ -1197,7 +1288,7 @@ void calibration::Terminate()
 	      fscaled_mk2_nobackground[ipmt]->SetBinContent(ibin,y2);
 	      }*/
 
-	  if (fFullShow) final_spectra_mk2_ipmt = new TCanvas(Form("final_Spectra_mk2_%d",ipmt), Form("NPE spectra Background Removed for PMT%d",ipmt+1));
+	 //  if (fFullShow) final_spectra_mk2_ipmt = new TCanvas(Form("final_Spectra_mk2_%d",ipmt), Form("NPE spectra Background Removed for PMT%d",ipmt+1));
 	  // if (fFullShow) final_spectra_mk2_ipmt->Divide(2,1);
 	  // if (fFullShow) final_spectra_mk2_ipmt->cd(1);
 	  /* Gauss3->SetParameters(0.08, 1.0, 0.22, 0.029, 2, 0.5, 0.15, 3, 0.26);
@@ -1214,7 +1305,7 @@ void calibration::Terminate()
 	  if (fFullShow) fscaled_mk2_nobackground[ipmt]->GetYaxis()->SetRangeUser(0,0.7);*/
 
 	  //Create a TGraphErrors to determine the spacing of the NPE
-	  y_npe[0] = sum_gauss_poisson->GetParameter(1), y_npe[1] = sum_gauss_poisson->GetParameter(4), y_npe[2] = sum_gauss_poisson->GetParameter(7);
+	 /* y_npe[0] = sum_gauss_poisson->GetParameter(1), y_npe[1] = sum_gauss_poisson->GetParameter(4), y_npe[2] = sum_gauss_poisson->GetParameter(7);
 	  y_err[0] = sum_gauss_poisson->GetParError(1), y_err[1] = sum_gauss_poisson->GetParError(4), y_err[2] = sum_gauss_poisson->GetParError(7);
 	  x_npe[0] = 1, x_npe[1] = 2, x_npe[2] = 3;
 	  TGraphErrors *gr_npe_mk2 = new TGraphErrors(3, x_npe, y_npe, x_err, y_err);
@@ -1225,7 +1316,7 @@ void calibration::Terminate()
 	  if (fFullShow) final_spectra_mk2_ipmt->cd(1);
 	  Linear->SetParameters(1.0, 0.0);
 	  fFullShow ? gr_npe_mk2->Fit("Linear","RQ") : gr_npe_mk2->Fit("Linear","RQ");
-	  if (fFullShow) gr_npe_mk2->Draw("A*");
+	  if (fFullShow) gr_npe_mk2->Draw("A*");*/
 	  calibration_mk2[ipmt] = xscale_mk2;
 	  calibration_mk2Err[ipmt] = xscale_mk2Err;
 	  pmt_calib_mk2[ipmt] = abs(1.0 - sum_gauss_poisson->GetParameter(1));
@@ -1278,7 +1369,7 @@ void calibration::Terminate()
 	  for (Int_t i=0; i<3; i++)
 	    {
 	      // Need to define Boolean for this loop, earlier it's based on X2 range of fit, do similar here. Case not used for now SK 27/8/19
-	      //if (GoodFit[i] == kFALSE) continue;                     // Take weighted avg 26/8/19 SK
+	      if (GoodFit[i] == kFALSE) continue;                     // Take weighted avg 26/8/19 SK
 	      WeightAvgSum1 += mean[i]/(mean_err[i]*mean_err[i]);               
 	      WeightAvgSum2 += 1/(mean_err[i]*mean_err[i]);
 	    }
