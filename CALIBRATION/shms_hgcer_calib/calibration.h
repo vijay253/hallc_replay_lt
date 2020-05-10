@@ -164,6 +164,7 @@ Double_t poisson(Double_t *x, Double_t *par)
   Double_t result1 = (par[1]*pow(par[0],x[0])*exp(-par[0]))/(tgamma(x[0]+1));                 
   return result1;
   }
+
 //Gaussian distribution is used to find the mean of the SPE and determine spacing between subsequent NPE
 Double_t gauss(Double_t *x, Double_t *par)
 {
@@ -175,24 +176,23 @@ Double_t gauss(Double_t *x, Double_t *par)
   return result1 + result2 + result3 + result4 + result5;
 }
  
-// Sum of Gaussian distribution and Poissoin distribution
-  Double_t sum_gauss_poisson1(Double_t *x, Double_t *par){
+// Function used for quality contron of the calibration
+Double_t fun_4gauss_2poisson(Double_t *x, Double_t *par)
+{
   Double_t result1 = par[0]*exp((-0.5)*(pow((x[0] - par[1]),2)/pow((par[2]),2)));
   Double_t result2 = par[3]*exp((-0.5)*(pow((x[0] - par[4]),2)/pow((par[5]),2)));
   Double_t result3 = par[6]*exp((-0.5)*(pow((x[0] - par[7]),2)/pow((par[8]),2)));
   Double_t result4 = par[9]*exp((-0.5)*(pow((x[0] - par[10]),2)/pow((par[11]),2)));
   Double_t result5 = (par[13]*pow(par[12],x[0])*exp(-par[12]))/(tgamma(x[0]+1)); 
   Double_t result6 = (par[15]*pow(par[14],x[0])*exp(-par[14]))/(tgamma(x[0]+1)); 
-
   return result1 + result2 + result3 +result4 + result5 + result6;
-
 }
+
 //A simple linear equation is used to determine how linear the means of the NPE are
 Double_t linear(Double_t *x, Double_t *par)
 {
   Double_t result1 = par[0]*x[0] + par[1];
   return result1;
 }
-
 
 #endif // #ifdef calibration_cxx
