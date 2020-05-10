@@ -545,19 +545,15 @@ void calibration::Terminate()
       fBeta_Full->Draw();
       Beta->cd(2);
       fBeta_Cut->Draw();
-      Beta->SaveAs("Beta.pdf");
+       Beta->SaveAs("Calibration_plots/ Beta.png");
 
       //Canvas to show full timing  information
       TCanvas *Timing;
       Timing = new TCanvas("Timing", "Timing information for events");
-      // Timing->Divide(2,1);
-      // Timing->cd(1);
       fTiming_Full->Draw("Colz");
-      //Timing->cd(2);
-      // fTiming_Cut->Draw("Colz");
-      Timing->SaveAs("Full_timing.png");
-      //Canvas to show timing cut info for each PMTs
+      Timing->SaveAs("Calibration_plots/Full_timing.png");
 
+      //Canvas to show timing cut info for each PMTs
       TCanvas *Timing1;
       Timing1 = new TCanvas("Timing1","time cuts for each pmts.");
       Timing1->Divide(2,2);
@@ -569,7 +565,7 @@ void calibration::Terminate()
       fTim3->Draw();
       Timing1->cd(4);
       fTim4->Draw(); 
-      Timing1->SaveAs("Timing_cuts.png");
+      Timing1->SaveAs("Calibration_plots/Timing_cuts.png");
     } 
 
   //Show the particle cuts performed in the histogram forming
@@ -592,7 +588,7 @@ void calibration::Terminate()
   Gauss1->SetParNames("Amplitude","Mean","Std. Dev.");
 
   //Sum of two Gaussians to determine SPE with minimal systematics
-  TF1 *Gauss2 = new TF1("Gauss2",gauss,100,6,6);                                               
+  TF1 *Gauss2 = new TF1("Gauss2",gauss,0, 20,6);                                               
   Gauss2->SetParNames("Amplitude 1","Mean 1","Std. Dev. 1","Amplitude 2","Mean 2","Std. Dev. 2");
 
   //Sum of three Gaussians to determine NPE spacing
@@ -703,10 +699,10 @@ void calibration::Terminate()
                   Gauss2->SetParameter(3, 40);
 		  Gauss2->SetParameter(4, xpeaks[1]);	
 		  Gauss2->SetParameter(5, 2.25);
-		  Gauss2->SetParLimits(0, 0., PulseInt_quad[iquad][ipmt]->GetBinContent(PulseInt_quad[iquad][ipmt]->GetXaxis()->FindBin(xpeaks[0])));
+		  Gauss2->SetParLimits(0, 0.0,PulseInt_quad[iquad][ipmt]->GetBinContent(PulseInt_quad[iquad][ipmt]->GetXaxis()->FindBin(xpeaks[0])));
 		  Gauss2->SetParLimits(1, xpeaks[0]-2, xpeaks[0]+2);
 		  Gauss2->SetParLimits(2, 0.5, 10.0);
-		  Gauss2->SetParLimits(3, 0., PulseInt_quad[iquad][ipmt]->GetBinContent(PulseInt_quad[iquad][ipmt]->GetXaxis()->FindBin(xpeaks[1])));
+		  Gauss2->SetParLimits(3, 0.0,PulseInt_quad[iquad][ipmt]->GetBinContent(PulseInt_quad[iquad][ipmt]->GetXaxis()->FindBin(xpeaks[1])));
 		  Gauss2->SetParLimits(4, xpeaks[1]-0.5, xpeaks[1]+0.5);
 		  Gauss2->SetParLimits(5, 0.5, 4.0);
 		  fFullShow ? PulseInt_quad[iquad][ipmt]->Fit("Gauss2","RQN") : PulseInt_quad[iquad][ipmt]->Fit("Gauss2","RQN");		
@@ -761,6 +757,21 @@ void calibration::Terminate()
 		      g2->SetLineColor(3);	      	       
 		      g2->Draw("same");
 		    } 
+		 
+		  Double_t p0, p0_err, p1, p1_err, p2, p2_err, p3, p3_err, p4, p4_err, p5, p5_err, Chi, NDF;
+		  TPaveText *t = new TPaveText(0.45, 0.6, 0.9, 0.9, "NDC");
+		  {
+		    t->SetTextColor(kBlack);
+		    t->AddText(Form(" Chi/NDF     = %3.3f #/ %3.3f", Chi = Gauss2->GetChisquare(), NDF = Gauss2->GetNDF() ));
+		    t->AddText(Form(" Amplitude 1     = %3.3f #/ %3.3f", p0 = Gauss2->GetParameter(0), p0_err = Gauss2->GetParError(0)));
+		    t->AddText(Form(" Mean 1      = %3.3f #/ %3.3f", p1 = Gauss2->GetParameter(1), p1_err = Gauss2->GetParError(1)));
+		    t->AddText(Form(" Std. 1      = %3.3f #/ %3.3f", p2 = Gauss2->GetParameter(2), p2_err = Gauss2->GetParError(2)));
+		    t->AddText(Form(" Amplitude 2     = %3.3f #/ %3.3f", p3 = Gauss2->GetParameter(3), p3_err = Gauss2->GetParError(3)));
+		    t->AddText(Form(" Mean 2      = %3.3f #/ %3.3f", p4 = Gauss2->GetParameter(4), p4_err = Gauss2->GetParError(4)));
+		    t->AddText(Form(" Std. 2      = %3.3f #/ %3.3f", p5 = Gauss2->GetParameter(5), p5_err = Gauss2->GetParError(5)));
+		    t->Draw();
+		  }
+
 
 		  if (xpeaks[0] > 2.0 && PulseInt_quad[iquad][ipmt]->GetBinContent(PulseInt_quad[iquad][ipmt]->GetXaxis()->FindBin(xpeaks[0])) > 40) mean[ipad-1] = Gauss2->GetParameter(1); 
 		  if (xpeaks[0] > 2.0 && PulseInt_quad[iquad][ipmt]->GetBinContent(PulseInt_quad[iquad][ipmt]->GetXaxis()->FindBin(xpeaks[0])) > 40) SD[ipad-1] = Gauss2->GetParameter(2); 
@@ -768,8 +779,7 @@ void calibration::Terminate()
 		  if (xpeaks[0] > 2.0 && PulseInt_quad[iquad][ipmt]->GetBinContent(PulseInt_quad[iquad][ipmt]->GetXaxis()->FindBin(xpeaks[0])) > 40) mean_err[ipad-1] = Gauss2->GetParError(1);
 
 		  // Set Boolean of whether fit is good or not here
-		  // if ( BadFitText == nullptr)
-		  //  continue; 	  
+		  
 		  if (RChi2[ipad-1] < 0.5 || RChi2[ipad-1] > 10)
 		    {
 		      GoodFit[ipad-1] = kFALSE; 
@@ -784,6 +794,7 @@ void calibration::Terminate()
 		  ipad++;
 
 		} 
+	      quad_cuts[ipmt]->SaveAs(Form("Calibration_plots/PMT%0i.png", 1+ipmt));
 	    }
 
 	  
@@ -950,15 +961,15 @@ void calibration::Terminate()
 	  TPaveText *t1 = new TPaveText(0.70, 0.35, 0.9, 0.9, "NDC");
 	  {
 	    t1->SetTextColor(kBlack);
-	    t1->AddText(Form(" Chi/NDF     = %0f #/ %0f", Chi, NDF ));
-	    t1->AddText(Form(" Mean 1      = %0f #pm %0f ", p1, p1_err ));
-	    t1->AddText(Form(" Std. Dev. 1 = %0f #pm %0f",  p2, p2_err ));
-	    t1->AddText(Form(" Mean 2      = %0f #pm %0f ", p4, p4_err ));
-	    t1->AddText(Form(" Std. Dev. 2 = %0f #pm %0f ", p5, p5_err ));
-	    t1->AddText(Form(" Mean 3      = %0f #pm %0f ", p7, p7_err ));
-	    t1->AddText(Form(" Std. Dev. 3 = %0f #pm %0f ", p8, p8_err ));
-	    t1->AddText(Form(" Mean 4      = %0f #pm %0f ", p10, p10_err ));
-	    t1->AddText(Form(" Std. Dev 4  = %0f #pm %0f ", p11, p11_err ));	    
+	    t1->AddText(Form(" Chi/NDF     = %3.3f #/ %3.3f", Chi, NDF ));
+	    t1->AddText(Form(" Mean 1      = %3.3f #pm %3.3f ", p1, p1_err ));
+	    t1->AddText(Form(" Std. Dev. 1 = %3.3f #pm %3.3f",  p2, p2_err ));
+	    t1->AddText(Form(" Mean 2      = %3.3f #pm %3.3f ", p4, p4_err ));
+	    t1->AddText(Form(" Std. Dev. 2 = %3.3f #pm %3.3f ", p5, p5_err ));
+	    t1->AddText(Form(" Mean 3      = %3.3f #pm %3.3f ", p7, p7_err ));
+	    t1->AddText(Form(" Std. Dev. 3 = %3.3f #pm %3.3f ", p8, p8_err ));
+	    t1->AddText(Form(" Mean 4      = %3.3f #pm %3.3f ", p10, p10_err ));
+	    t1->AddText(Form(" Std. Dev 4  = %3.3f #pm %3.3f ", p11, p11_err ));	    
 	    t1->Draw();
 	  }
 
@@ -1016,6 +1027,8 @@ void calibration::Terminate()
 	     g8->Draw("same"); 
 	   }
 
+	   background_ipmt->SaveAs(Form("Calibration_plots/Full_scaled_PMT%0i.png", 1+ipmt));
+
 	   //Tcanvas for draw the zoomed clone histogram 
 
 	   if (fFullShow) Full_zoom_fit_ipmt = new TCanvas(Form("Full_zoom_fit_pmt%d",ipmt), Form("Zoom in NPE spectra for PMT%d with all fits",ipmt+1));
@@ -1043,7 +1056,7 @@ void calibration::Terminate()
 	     Function_clone->SetParameter(15,Function->GetParameter(15));	   
 	     Function_clone->SetLineColor(5);
 	     Function_clone->Draw("same");
-	     }
+	   }
 	      	  
 	   TF1 *g9 = new TF1("g9","gaus",0,35.0);
 	   {  
@@ -1095,8 +1108,10 @@ void calibration::Terminate()
 	     g14->SetParameter(1,Function->GetParameter(15));
 	     g14->SetLineColor(8);
 	     g14->Draw("same"); 
-	   }
-	  
+	   } 
+
+	   Full_zoom_fit_ipmt->SaveAs(Form("Calibration_plots/Zoom_scaled_PMT%0i.png", 1+ipmt));
+
 	   //TCanvas for the linear spacing of photo-electrons
 	   if (fFullShow) final_spectra_ipmt = new TCanvas(Form("final_Spectra_%d",ipmt), Form("NPE spectra for PMT%d",ipmt+1));
 	   y_npe[0] = Function->GetParameter(1), y_npe[1] = Function->GetParameter(4), y_npe[2] = Function->GetParameter(7);
@@ -1145,23 +1160,24 @@ void calibration::Terminate()
 	  sl2 = g15->GetParameter(0);
 	  sl2_err = g15->GetParError(0);
 
-	  TPaveText *t = new TPaveText(0.60, 0.62, 0.90, 0.75, "NDC");
+	  TPaveText *t = new TPaveText(0.10, 0.77, 0.40, 0.90, "NDC");
 	  {
 	    t->SetTextColor(kBlack);
-	    t->AddText(Form(" Chi/NDF = %0f #/ %0f", Chi1, NDF1 ));
-	    t->AddText(Form(" Slope = %0f #pm %0f",sl1, sl1_err));
-	    t->AddText(Form(" Intercept = %0f #pm %0f",in1, in1_err));
+	    t->AddText(Form(" Chi/NDF = %03.3f #/ %3.3f", Chi1, NDF1 ));
+	    t->AddText(Form(" Slope = %3.3f #pm %3.3f",sl1, sl1_err));
+	    t->AddText(Form(" Intercept = %3.3f #pm %3.3f",in1, in1_err));
 	    t->Draw();
 	  }	  
 	     
-	  TPaveText *t2 = new TPaveText(0.60, 0.62, 0.90, 0.75, "NDC");
+	  TPaveText *t2 = new TPaveText(0.10, 0.65, 0.40, 0.78, "NDC");
 	  {
 	    t2->SetTextColor(kRed);
-	    t2->AddText(Form(" Chi/NDF = %0f #/ %0f", Chi2, NDF2 ));
-	    t2->AddText(Form(" Slope = %0f #pm %0f",sl2, sl2_err));
+	    t2->AddText(Form(" Chi/NDF = %3.3f #/ %3.3f", Chi2, NDF2 ));
+	    t2->AddText(Form(" Slope = %3.3f #pm %3.3f",sl2, sl2_err));
 	    t2->AddText(Form(" Intercept = 0 " ));
 	    t2->Draw();
 	  }
+	  final_spectra_ipmt->SaveAs(Form("Calibration_plots/Linear_spacing_PMT%0i.png", 1+ipmt));
 
  	  calibration_mk1[ipmt] = xscale;
 	  calibration_mk1Err[ipmt] = xscaleErr;
@@ -1182,7 +1198,7 @@ void calibration::Terminate()
                
 
        //Begin the TrackFired cut calibration
-      if (fTrack)
+      /* if (fTrack)
 	{
 	  //TSpectrum class is used to find the SPE peak using the search method
 	  TSpectrum *s = new TSpectrum(2); 
@@ -1307,10 +1323,10 @@ void calibration::Terminate()
 	  pmt_calib_mk2[ipmt] = abs(1.0 - Gauss1->GetParameter(1));
 	 
 
-      	} //This brace marks the end of TracksFired strategy
+	  }*/ //This brace marks the end of TracksFired strategy
 
       //Begin investigation of Poisson-like behaviour of calibrated spectra..only valid if particle ID is applied
-      if (fCut)
+      /*  if (fCut)
 	{
 	  fscaled_combined[ipmt] = new TH1F(Form("fscaled_combined%d",ipmt+1), Form("Scaled ADC spectra for PMT %d", ipmt+1), 300, 0, 20);
 
@@ -1341,7 +1357,7 @@ void calibration::Terminate()
 	  //Normalize the histogram for ease of fitting
 	  fscaled_combined[ipmt]->Scale(1.0/fscaled_combined[ipmt]->Integral(), "width");
 	  fscaled_combined_mk2[ipmt]->Scale(1.0/fscaled_combined[ipmt]->Integral(), "width");
-	}     // This brace marks the end of the loop over PMTs
+	  } */    // This brace marks the end of the loop over PMTs
 
               // Write to PDF file
 
@@ -1413,10 +1429,23 @@ void calibration::Terminate()
 
   else
     {
-      calibration << "phgcer_adc_to_npe = "; 
+      calibration << Form("phgcer_adc_to_npe for Run Number: = %i", 7882)<<endl; 
+
       for (Int_t ipmt = 0; ipmt < 4; ipmt++)
 	{
-	  calibration << Form("1./%3.3f. ", (pmt_calib[ipmt] < pmt_calib_mk2[ipmt]) ? calibration_mk1[ipmt] : calibration_mk2[ipmt]);
+	  calibration << Form("phgcer_adc_to_npe: PMT%i = ", 1+ipmt); 
+
+	  // calibration << Form("1./%3.3f. ", (pmt_calib[ipmt] < pmt_calib_mk2[ipmt]) ? calibration_mk1[ipmt] : calibration_mk2[ipmt]);
+	  calibration << Form("%3.3f  +/-  %3.3f ",calibration_mk1[ipmt],  calibration_mk1Err[ipmt] )<<endl;
+	}
+
+      for (Int_t ipmt = 0; ipmt < 4; ipmt++)
+	{
+	  calibration << Form("From quality control, phgcer_adc_to_npe: PMT%i = ", 1+ipmt); 
+
+	  // calibration << Form("1./%3.3f. ", (pmt_calib[ipmt] < pmt_calib_mk2[ipmt]) ? calibration_mk1[ipmt] : calibration_mk2[ipmt]);
+	  calibration << Form("%3.3f  +/-  %3.3f ",calibration_mk2[ipmt],  calibration_mk2Err[ipmt] )<<endl;
+
 	}
 
       calibration.close();
