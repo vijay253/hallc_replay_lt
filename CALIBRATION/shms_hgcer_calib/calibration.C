@@ -59,7 +59,7 @@ void calibration::Begin(TTree * /*tree*/)
   Info("Begin", "Default particle ID is electrons, use option pions if desired");
   printf("\n\n");
 
-  //Check option
+  //Check option 
   if (option.Contains("showall")) fFullShow = kTRUE;
   if (option.Contains("trackfired")) fTrack = kTRUE;
   if (option.Contains("pions") || option.Contains("pion")) fPions = kTRUE;
@@ -627,9 +627,10 @@ void calibration::Terminate()
   TPaveText *GoodFitText = new TPaveText (0.65, 0.15, 0.85, 0.2, "NDC");
   GoodFitText->SetTextColor(kGreen);
   GoodFitText->AddText("Good fit");
-  TPaveText *BadFitText = new TPaveText (0.65, 0.15, 0.85, 0.2, "NDC");  
-  BadFitText->SetTextColor(kRed);
-  BadFitText->AddText("Bad fit");
+
+  /* TPaveText *BadFitText = new TPaveText (0.65, 0.15, 0.85, 0.2, "NDC");  
+  BadFitText->SetTextColor(kBlack);
+  BadFitText->AddText("Bad fit");*/
 
   TString outputpdf = "PMT_Fits.pdf";                        //Name of the pdf file
   //Array to hold the Poisson character of the calibrations
@@ -763,12 +764,12 @@ void calibration::Terminate()
 		  {
 		    t->SetTextColor(kBlack);
 		    t->AddText(Form(" Chi/NDF     = %3.3f #/ %3.3f", Chi = Gauss2->GetChisquare(), NDF = Gauss2->GetNDF() ));
-		    t->AddText(Form(" Amplitude 1     = %3.3f #/ %3.3f", p0 = Gauss2->GetParameter(0), p0_err = Gauss2->GetParError(0)));
-		    t->AddText(Form(" Mean 1      = %3.3f #/ %3.3f", p1 = Gauss2->GetParameter(1), p1_err = Gauss2->GetParError(1)));
-		    t->AddText(Form(" Std. 1      = %3.3f #/ %3.3f", p2 = Gauss2->GetParameter(2), p2_err = Gauss2->GetParError(2)));
-		    t->AddText(Form(" Amplitude 2     = %3.3f #/ %3.3f", p3 = Gauss2->GetParameter(3), p3_err = Gauss2->GetParError(3)));
-		    t->AddText(Form(" Mean 2      = %3.3f #/ %3.3f", p4 = Gauss2->GetParameter(4), p4_err = Gauss2->GetParError(4)));
-		    t->AddText(Form(" Std. 2      = %3.3f #/ %3.3f", p5 = Gauss2->GetParameter(5), p5_err = Gauss2->GetParError(5)));
+		    t->AddText(Form(" Amplitude 1     = %3.3f #pm %3.3f", p0 = Gauss2->GetParameter(0), p0_err = Gauss2->GetParError(0)));
+		    t->AddText(Form(" Mean 1      = %3.3f #pm %3.3f", p1 = Gauss2->GetParameter(1), p1_err = Gauss2->GetParError(1)));
+		    t->AddText(Form(" Std. 1      = %3.3f #pm %3.3f", p2 = Gauss2->GetParameter(2), p2_err = Gauss2->GetParError(2)));
+		    t->AddText(Form(" Amplitude 2     = %3.3f #pm %3.3f", p3 = Gauss2->GetParameter(3), p3_err = Gauss2->GetParError(3)));
+		    t->AddText(Form(" Mean 2      = %3.3f #pm %3.3f", p4 = Gauss2->GetParameter(4), p4_err = Gauss2->GetParError(4)));
+		    t->AddText(Form(" Std. 2      = %3.3f #pm %3.3f", p5 = Gauss2->GetParameter(5), p5_err = Gauss2->GetParError(5)));
 		    t->Draw();
 		  }
 
@@ -779,7 +780,11 @@ void calibration::Terminate()
 		  if (xpeaks[0] > 2.0 && PulseInt_quad[iquad][ipmt]->GetBinContent(PulseInt_quad[iquad][ipmt]->GetXaxis()->FindBin(xpeaks[0])) > 40) mean_err[ipad-1] = Gauss2->GetParError(1);
 
 		  // Set Boolean of whether fit is good or not here
-		  
+		
+		  TPaveText *BadFitText = new TPaveText (0.65, 0.15, 0.85, 0.2, "NDC");  
+		  BadFitText->SetTextColor(kRed);
+		  BadFitText->AddText("Bad fit");  
+	  
 		  if (RChi2[ipad-1] < 0.5 || RChi2[ipad-1] > 10)
 		    {
 		      GoodFit[ipad-1] = kFALSE; 
@@ -793,9 +798,8 @@ void calibration::Terminate()
 		  
 		  ipad++;
 
-		} 
-	      quad_cuts[ipmt]->SaveAs(Form("Calibration_plots/PMT%0i.png", 1+ipmt));
-	    }
+		} if(fFullShow) quad_cuts[ipmt]->SaveAs(Form("Calibration_plots/PMT%0i.png", 1+ipmt));	    
+	    } 
 
 	  
 	  //Obtain the conversion from ADC to NPE by taking the average of the SPE means
@@ -838,7 +842,6 @@ void calibration::Terminate()
 	      xscale = Gauss1->GetParameter(1);
 	      xscaleErr = Gauss1->GetParError(1);
 	    }	  
-
 
 	  //Scale full ADC spectra according to the mean of the SPE. This requires filling a new histogram with the same number of bins but scaled min/max
 	  Int_t nbins;
@@ -1027,7 +1030,7 @@ void calibration::Terminate()
 	     g8->Draw("same"); 
 	   }
 
-	   background_ipmt->SaveAs(Form("Calibration_plots/Full_scaled_PMT%0i.png", 1+ipmt));
+	   if (fFullShow) background_ipmt->SaveAs(Form("Calibration_plots/Full_scaled_PMT%0i.png", 1+ipmt));
 
 	   //Tcanvas for draw the zoomed clone histogram 
 
@@ -1110,7 +1113,7 @@ void calibration::Terminate()
 	     g14->Draw("same"); 
 	   } 
 
-	   Full_zoom_fit_ipmt->SaveAs(Form("Calibration_plots/Zoom_scaled_PMT%0i.png", 1+ipmt));
+	   if(fFullShow) Full_zoom_fit_ipmt->SaveAs(Form("Calibration_plots/Zoom_scaled_PMT%0i.png", 1+ipmt));
 
 	   //TCanvas for the linear spacing of photo-electrons
 	   if (fFullShow) final_spectra_ipmt = new TCanvas(Form("final_Spectra_%d",ipmt), Form("NPE spectra for PMT%d",ipmt+1));
@@ -1177,7 +1180,7 @@ void calibration::Terminate()
 	    t2->AddText(Form(" Intercept = 0 " ));
 	    t2->Draw();
 	  }
-	  final_spectra_ipmt->SaveAs(Form("Calibration_plots/Linear_spacing_PMT%0i.png", 1+ipmt));
+	 if(fFullShow) final_spectra_ipmt->SaveAs(Form("Calibration_plots/Linear_spacing_PMT%0i.png", 1+ipmt));
 
  	  calibration_mk1[ipmt] = xscale;
 	  calibration_mk1Err[ipmt] = xscaleErr;
@@ -1198,7 +1201,7 @@ void calibration::Terminate()
                
 
        //Begin the TrackFired cut calibration
-      /* if (fTrack)
+       if (fTrack)
 	{
 	  //TSpectrum class is used to find the SPE peak using the search method
 	  TSpectrum *s = new TSpectrum(2); 
@@ -1323,10 +1326,10 @@ void calibration::Terminate()
 	  pmt_calib_mk2[ipmt] = abs(1.0 - Gauss1->GetParameter(1));
 	 
 
-	  }*/ //This brace marks the end of TracksFired strategy
+	  } //This brace marks the end of TracksFired strategy
 
       //Begin investigation of Poisson-like behaviour of calibrated spectra..only valid if particle ID is applied
-      /*  if (fCut)
+        if (fCut)
 	{
 	  fscaled_combined[ipmt] = new TH1F(Form("fscaled_combined%d",ipmt+1), Form("Scaled ADC spectra for PMT %d", ipmt+1), 300, 0, 20);
 
@@ -1357,7 +1360,7 @@ void calibration::Terminate()
 	  //Normalize the histogram for ease of fitting
 	  fscaled_combined[ipmt]->Scale(1.0/fscaled_combined[ipmt]->Integral(), "width");
 	  fscaled_combined_mk2[ipmt]->Scale(1.0/fscaled_combined[ipmt]->Integral(), "width");
-	  } */    // This brace marks the end of the loop over PMTs
+	  }// This brace marks the end of the loop over PMTs
 
               // Write to PDF file
 

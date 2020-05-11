@@ -1,9 +1,9 @@
 phgcer_adc_to_npe for Run Number: = 7882
-phgcer_adc_to_npe: PMT1 = 6.112  +/-  0.029 
-phgcer_adc_to_npe: PMT2 = 6.750  +/-  0.067 
-phgcer_adc_to_npe: PMT3 = 5.603  +/-  0.039 
-phgcer_adc_to_npe: PMT4 = 7.052  +/-  0.113 
-From quality control, phgcer_adc_to_npe: PMT1 = 6.075  +/-  0.042 
-From quality control, phgcer_adc_to_npe: PMT2 = 6.700  +/-  0.088 
-From quality control, phgcer_adc_to_npe: PMT3 = 5.446  +/-  0.046 
-From quality control, phgcer_adc_to_npe: PMT4 = 6.962  +/-  0.117 
+phgcer_adc_to_npe: PMT1 = -nan  +/-  inf 
+phgcer_adc_to_npe: PMT2 = -nan  +/-  inf 
+phgcer_adc_to_npe: PMT3 = -nan  +/-  inf 
+phgcer_adc_to_npe: PMT4 = -nan  +/-  inf 
+From quality control, phgcer_adc_to_npe: PMT1 = -nan  +/-  nan 
+From quality control, phgcer_adc_to_npe: PMT2 = -nan  +/-  nan 
+From quality control, phgcer_adc_to_npe: PMT3 = -nan  +/-  nan 
+From quality control, phgcer_adc_to_npe: PMT4 = -nan  +/-  nan 

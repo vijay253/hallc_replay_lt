@@ -4,15 +4,17 @@
 #include <string>
 #include <stdio.h>
 
+Double_t z = 16;
+
 void run_cal(Int_t RunNumber = 0, Int_t NumEvents = 0, Int_t coin = 0)
 {
-  /*if (RunNumber == 0)
+  /* if (RunNumber == 0)
      {
       cout << "Enter a Run Number (-1 to exit): ";
       cin >> RunNumber;
       if (RunNumber <= 0) return;
-      }*/
-  /* if (NumEvents == 0)
+      }
+   if (NumEvents == 0)
     {
       cout << "\nNumber of Events to analyze: ";
       cin >> NumEvents;
