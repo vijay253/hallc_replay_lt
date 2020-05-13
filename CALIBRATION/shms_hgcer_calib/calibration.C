@@ -506,6 +506,10 @@ void calibration::Terminate()
   printf("\n");
 
   //gStyle->SetOptStat(1000000001);
+  // Draw all plots in single pdf file
+  TString foutname = "/home/vijay/work/Jlab/hallc_replay_lt/CALIBRATION/shms_hgcer_calib/Calibration_plots/Calibraion_plots";
+  TString outputpdf = foutname + ".pdf";
+
 
   //Have to extract the histograms from the OutputList
   TH1F* PulseInt[4];
@@ -542,30 +546,33 @@ void calibration::Terminate()
       Beta = new TCanvas("Beta", "Beta information for events");
       Beta->Divide(2,1);
       Beta->cd(1);
-      fBeta_Full->Draw();
+      fBeta_Full->Draw(); 
       Beta->cd(2);
-      fBeta_Cut->Draw();
-       Beta->SaveAs("Calibration_plots/ Beta.png");
+      fBeta_Cut->Draw(); 
 
+      if (fFullShow) Beta->Print(outputpdf + '(');
+     
       //Canvas to show full timing  information
       TCanvas *Timing;
       Timing = new TCanvas("Timing", "Timing information for events");
-      fTiming_Full->Draw("Colz");
-      Timing->SaveAs("Calibration_plots/Full_timing.png");
+      fTiming_Full->Draw(); 
+
+      if (fFullShow) Timing->Print(outputpdf);
 
       //Canvas to show timing cut info for each PMTs
       TCanvas *Timing1;
       Timing1 = new TCanvas("Timing1","time cuts for each pmts.");
       Timing1->Divide(2,2);
       Timing1->cd(1);
-      fTim1->Draw();
+      fTim1->Draw();     
       Timing1->cd(2);
-      fTim2->Draw();
+      fTim2->Draw();    
       Timing1->cd(3);
-      fTim3->Draw();
+      fTim3->Draw();      
       Timing1->cd(4);
-      fTim4->Draw(); 
-      Timing1->SaveAs("Calibration_plots/Timing_cuts.png");
+      fTim4->Draw();
+   
+     if (fFullShow) Timing1->Print(outputpdf);
     } 
 
   //Show the particle cuts performed in the histogram forming
@@ -632,7 +639,7 @@ void calibration::Terminate()
   BadFitText->SetTextColor(kBlack);
   BadFitText->AddText("Bad fit");*/
 
-  TString outputpdf = "PMT_Fits.pdf";                        //Name of the pdf file
+  //TString outputpdf = "PMT_Fits.pdf";                        //Name of the pdf file
   //Array to hold the Poisson character of the calibrations
   Double_t Pois_Chi[2];
   Pois_Chi[0] = 0.0, Pois_Chi[1] = 0.0;
@@ -716,7 +723,7 @@ void calibration::Terminate()
 		  Gauss2->SetParameter(4,Gauss2->GetParameter(4));	
 		  Gauss2->SetParameter(5,Gauss2->GetParameter(5));
 	       	  fFullShow ? PulseInt_quad[iquad][ipmt]->Fit("Gauss2","RQ"): PulseInt_quad[iquad][ipmt]->Fit("Gauss2","RQ");
-
+		 
 		  // Draw individual functions from the Gauss2 function
 		  TF1 *g1 = new TF1("g1","gaus",0,35);
 
@@ -794,13 +801,13 @@ void calibration::Terminate()
 		    {
 		      GoodFit[ipad-1] = kTRUE;
 		      GoodFitText->Draw("same");
-		    } 		 
-		  
+		    } 		     	 			  	
+		 
 		  ipad++;
-
-		} if(fFullShow) quad_cuts[ipmt]->SaveAs(Form("Calibration_plots/PMT%0i.png", 1+ipmt));	    
-	    } 
-
+		 	 
+		}
+	    } 	      if(fFullShow) quad_cuts[ipmt]->Print(outputpdf);
+	          
 	  
 	  //Obtain the conversion from ADC to NPE by taking the average of the SPE means
 	  Double_t xscale = 0.0;
@@ -892,7 +899,7 @@ void calibration::Terminate()
 	  Function->SetParameter(14,  Poisson->GetParameter(0));  
 	  Function ->SetParameter(15, Poisson->GetParameter(1));
  
-	  // Constraints on sigma 	 
+	  // Constraints on mean 	 
 	  Function->SetParLimits(1, 1 - 3*xscaleErr, 1 + 3*xscaleErr);	
 	  Function->SetParLimits(4, 2 - 3*xscaleErr, 2 + 3*xscaleErr);
 	  Function->SetParLimits(7, 3 - 3*xscaleErr, 3 + 3*xscaleErr);
@@ -1029,8 +1036,7 @@ void calibration::Terminate()
 	     g8->SetLineColor(8);
 	     g8->Draw("same"); 
 	   }
-
-	   if (fFullShow) background_ipmt->SaveAs(Form("Calibration_plots/Full_scaled_PMT%0i.png", 1+ipmt));
+	   if(fFullShow) background_ipmt->Print(outputpdf);
 
 	   //Tcanvas for draw the zoomed clone histogram 
 
@@ -1112,9 +1118,8 @@ void calibration::Terminate()
 	     g14->SetLineColor(8);
 	     g14->Draw("same"); 
 	   } 
-
-	   if(fFullShow) Full_zoom_fit_ipmt->SaveAs(Form("Calibration_plots/Zoom_scaled_PMT%0i.png", 1+ipmt));
-
+	   if(fFullShow) Full_zoom_fit_ipmt->Print(outputpdf);
+	
 	   //TCanvas for the linear spacing of photo-electrons
 	   if (fFullShow) final_spectra_ipmt = new TCanvas(Form("final_Spectra_%d",ipmt), Form("NPE spectra for PMT%d",ipmt+1));
 	   y_npe[0] = Function->GetParameter(1), y_npe[1] = Function->GetParameter(4), y_npe[2] = Function->GetParameter(7);
@@ -1180,7 +1185,22 @@ void calibration::Terminate()
 	    t2->AddText(Form(" Intercept = 0 " ));
 	    t2->Draw();
 	  }
-	 if(fFullShow) final_spectra_ipmt->SaveAs(Form("Calibration_plots/Linear_spacing_PMT%0i.png", 1+ipmt));
+	  if(ipmt ==0)
+	    {
+	      if(fFullShow) final_spectra_ipmt->Print(outputpdf);
+	    }
+	  if(ipmt ==1)
+	    {
+	      if(fFullShow) final_spectra_ipmt->Print(outputpdf);
+	    }
+	  if(ipmt ==2)
+	    {
+	      if(fFullShow) final_spectra_ipmt->Print(outputpdf);
+	    } 
+	  if(ipmt ==3)
+	    {
+	      if(fFullShow) final_spectra_ipmt->Print(outputpdf + ')');
+	    } 
 
  	  calibration_mk1[ipmt] = xscale;
 	  calibration_mk1Err[ipmt] = xscaleErr;

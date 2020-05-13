@@ -69,6 +69,7 @@ class calibration : public TSelector {
   TH1F *fscaled_total_mk2;
    
   // Declaration of canvases used in fitting/analysis
+  TCanvas *t;
   TCanvas *quad_cuts_ipmt;
   TCanvas *quad_cuts[4];
   TCanvas *low_stats_ipmt;
