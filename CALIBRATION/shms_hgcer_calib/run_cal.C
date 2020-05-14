@@ -4,26 +4,36 @@
 #include <string>
 #include <stdio.h>
 
-Double_t z = 16;
-
-void run_cal(Int_t RunNumber = 0, Int_t NumEvents = 0, Int_t coin = 0)
+void run_cal(Int_t RunNumber1 = 0,Int_t RunNumber2 = 0,Int_t RunNumber3 = 0, Int_t NumEvents = 0, Int_t coin = 0)
 {
-  /* if (RunNumber == 0)
-     {
-      cout << "Enter a Run Number (-1 to exit): ";
-      cin >> RunNumber;
-      if (RunNumber <= 0) return;
-      }
-   if (NumEvents == 0)
+  if (RunNumber1 == 0)
     {
-      cout << "\nNumber of Events to analyze: ";
+      cout << "Enter a Run Number (-1 to exit): ";
+      cin >> RunNumber1;
+      if (RunNumber1 <= 0) return;
+    } 
+  if (RunNumber2 == 0)
+    {
+      cout << "Enter a Run Number (-1 to exit): ";
+      cin >> RunNumber2;
+      if (RunNumber2 <= 0) return;
+    }
+  if (RunNumber3 == 0)
+    {
+      cout << "Enter a Run Number (-1 to exit): ";
+      cin >> RunNumber3;
+      if (RunNumber3 <= 0) return;
+    }
+  if (NumEvents == 0)
+    {
+      cout << "\nNumber of Events to analyze for all runs: ";
       cin >> NumEvents;
-      }*/
+    }
   if (coin == 0)
     {
       cout << "\nIf this is a coincident run enter 1: ";
       cin >> coin;
-      }
+    }
 
   cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
@@ -40,15 +50,11 @@ void run_cal(Int_t RunNumber = 0, Int_t NumEvents = 0, Int_t coin = 0)
       cout << "\n\n"; */
   
   TChain ch("T");
-  if (coin == 1){ch.Add(Form("../../ROOTfiles/shms_coin_replay_production_all_%d_%d.root",7882,-1));
-     ch.Add(Form("../../ROOTfiles/shms_coin_replay_production_all_%d_%d.root", 7883,-1)); // There is no need for these to be form statements if you're feeding them a fixed variable
-     ch.Add(Form("../../ROOTfiles/shms_coin_replay_production_all_%d_%d.root",7884,-1));}  // You can just add the specfifc 4/5 ROOTfiles you want SK 28/8/19
-    /*ch.Add(Form("ROOTfiles/shms_coin_replay_production_all_%d_%d.root",4783,-1));
-    ch.Add(Form("ROOTfiles/shms_coin_replay_production_all_%d_%d.root",4787,-1));
-    ch.Add(Form("ROOTfiles/shms_coin_replay_production_all_%d_%d.root",4781,-1));
-    ch.Add(Form("ROOTfiles/shms_coin_replay_production_all_%d_%d.root",4803,-1));}*/
-    //ch.Add(Form("ROOTfiles/shms_coin_replay_production_all_%d_%d.root",-1)); }
-  else ch.Add(Form("ROOTfiles/shms_replay_production_all_%d_%d.root", RunNumber, NumEvents));
+  if (coin == 1){ch.Add(Form("../../ROOTfiles/shms_coin_replay_production_all_%d_%d.root",RunNumber1, NumEvents));
+    ch.Add(Form("../../ROOTfiles/shms_coin_replay_production_all_%d_%d.root", RunNumber2, NumEvents)); 
+    ch.Add(Form("../../ROOTfiles/shms_coin_replay_production_all_%d_%d.root",RunNumber3, NumEvents));}  
+
+  else ch.Add(Form("ROOTfiles/shms_replay_production_all_%d_%d.root", RunNumber1, NumEvents));
   TProof *proof = TProof::Open("workers=4");
   proof->SetProgressDialog(0);  
   ch.SetProof();
@@ -57,25 +63,27 @@ void run_cal(Int_t RunNumber = 0, Int_t NumEvents = 0, Int_t coin = 0)
     {
       //Start calibration process
       ch.Process("calibration.C",calib_option);
-
-      //  cout << "\n\nUpdate calibration constants with the better estimate (y/n)? ";
+    
+      cout << "\n\nUpdate calibration constants with the better estimate (y/n)? ";
       
-      //  TString user_input;
-      // cin >> user_input;
-      // if (user_input == "y")
-      //	{
-      // ifstream temp;
-      //  temp.open("calibration_temp.txt", ios::in);
-      //  if (temp.is_open())
-      //  {
-      //    if (calib_option.Contains("NGC")) rename("calibration_temp.txt", Form("../../PARAM/SHMS/NGCER/CALIB/pngcer_calib_%d.param", RunNumber));
+      TString user_input;
+      cin >> user_input;
+      if (user_input == "y")
+      	{
+	  ifstream temp;
+	  temp.open("calibration_temp.txt", ios::in);
+	  if (temp.is_open())
+	    {
+	      if (calib_option.Contains("NGC")) rename("calibration_temp.txt", Form("../../PARAM/SHMS/NGCER/CALIB/pngcer_calib_%d.param", RunNumber1));
+	      else {rename("calibration_temp.txt", Form("Calibration_plots/phgcer_calib_%d - %d.param", RunNumber1, RunNumber3));
+		rename("Calibration_plots/Calibration_plots.pdf", Form("Calibration_plots/Calibration_plots_%d - %d.pdf", RunNumber1, RunNumber3));}
 
-      //    else rename("calibration_temp.txt", Form("../../PARAM/SHMS/HGCER/CALIB/phgcer_calib_%d.param", RunNumber));
-      //  }
+		// else rename("calibration_temp.txt", Form("../../PARAM/SHMS/HGCER/CALIB/phgcer_calib_%d.param", RunNumber));
+	      }
 
-      //  else cout << "Error opening calibration constants, may have to update constants manually!" << endl;
+	      else cout << "Error opening calibration constants, may have to update constants manually!" << endl;
 	   
-    }
+	    }}
 
   // else
   // {

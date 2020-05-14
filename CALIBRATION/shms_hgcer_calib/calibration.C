@@ -507,7 +507,7 @@ void calibration::Terminate()
 
   //gStyle->SetOptStat(1000000001);
   // Draw all plots in single pdf file
-  TString foutname = "/home/vijay/work/Jlab/hallc_replay_lt/CALIBRATION/shms_hgcer_calib/Calibration_plots/Calibraion_plots";
+  TString foutname = "/home/vijay/work/Jlab/hallc_replay_lt/CALIBRATION/shms_hgcer_calib/Calibration_plots/Calibration_plots";
   TString outputpdf = foutname + ".pdf";
 
 
