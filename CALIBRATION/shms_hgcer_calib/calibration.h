@@ -57,6 +57,7 @@ class calibration : public TSelector {
   
 
   // Declaration of histograms used in fitting/analysis
+  TH1F *scaled_clone;
   TH1F *fscaled[4];
   TH1F *fscaled_nobackground[4];
   TH1F *fscaled_mk2[4];

@@ -74,22 +74,18 @@ void run_cal(Int_t RunNumber1 = 0,Int_t RunNumber2 = 0,Int_t RunNumber3 = 0, Int
 	  temp.open("calibration_temp.txt", ios::in);
 	  if (temp.is_open())
 	    {
-	      if (calib_option.Contains("NGC")) rename("calibration_temp.txt", Form("../../PARAM/SHMS/NGCER/CALIB/pngcer_calib_%d.param", RunNumber1));
-	      else {rename("calibration_temp.txt", Form("Calibration_plots/phgcer_calib_%d - %d.param", RunNumber1, RunNumber3));
-		rename("Calibration_plots/Calibration_plots.pdf", Form("Calibration_plots/Calibration_plots_%d - %d.pdf", RunNumber1, RunNumber3));}
+	      //if (calib_option.Contains("NGC")) rename("calibration_temp.txt", Form("../../PARAM/SHMS/NGCER/CALIB/pngcer_calib_%d.param", RunNumber1));
+	      rename("calibration_temp.txt", Form("Calibration_plots/phgcer_calib%d-%d.param", RunNumber1, RunNumber3));
+	      rename("calibration_temp1.txt", Form("Calibration_plots/phgcer_calib_err%d-%d.param", RunNumber1, RunNumber3));
 
-		// else rename("calibration_temp.txt", Form("../../PARAM/SHMS/HGCER/CALIB/phgcer_calib_%d.param", RunNumber));
-	      }
-
-	      else cout << "Error opening calibration constants, may have to update constants manually!" << endl;
+	      // else rename("calibration_temp.txt", Form("../../PARAM/SHMS/HGCER/CALIB/phgcer_calib_%d.param", RunNumber));
+	    
+	      rename("Calibration_plots/Calibration_plots.pdf", Form("Calibration_plots/Calibration_plots%d-%d.pdf", RunNumber1, RunNumber3));
+	    }
+	  else cout << "Error opening calibration constants, may have to update constants manually!" << endl;
+	    
 	   
-	    }}
+	}
+    }
 
-  // else
-  // {
-  //  remove("calibration_temp.txt"); 
-  //	}
-  //  }
- 
-  // if (eff_option != "NA") ch.Process("efficiencies.C+",eff_option);
 }
