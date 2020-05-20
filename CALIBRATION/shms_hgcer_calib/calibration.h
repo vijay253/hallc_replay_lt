@@ -35,6 +35,7 @@ class calibration : public TSelector {
   Bool_t          fTrack;
   Bool_t          fCut;
   Bool_t          fPions;
+  Bool_t          frun;
 
   // Declaration of histograms
   TH1F          **fPulseInt;

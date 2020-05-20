@@ -539,7 +539,6 @@ void calibration::Terminate()
 	PulseInt[ipmt]->Rebin(4);
       }
   }
-
   //Canvases to display cut information
   if (fFullShow)
     {
@@ -1358,73 +1357,9 @@ void calibration::Terminate()
 	  pmt_calib_mk2[ipmt] = abs(1.0 - Gauss1->GetParameter(1));
 	 
 
-	  } //This brace marks the end of TracksFired strategy
-
-      //Begin investigation of Poisson-like behaviour of calibrated spectra..only valid if particle ID is applied
-       if (fCut)
-	 {
-	   fscaled_combined[ipmt] = new TH1F(Form("fscaled_combined%d",ipmt+1), Form("Scaled ADC spectra for PMT %d", ipmt+1), 300, 0, 20);
-
-	   fscaled_combined_mk2[ipmt] = new TH1F(Form("fscaled_combined_mk2%d",ipmt+1), Form("Scaled ADC spectra with Second Calibration for PMT %d", ipmt+1), 300, 0, 20);
-  
-	   Int_t nbins = PulseInt[ipmt]->GetXaxis()->GetNbins();
-	   Double_t xmean = calibration_mk1[ipmt];
-	   Double_t xmean_mk2 = calibration_mk2[ipmt];
-
-	   fscaled_temp[ipmt] = new TH1F(Form("fscaled_temp_pmt%d",ipmt+1), Form("Scaled ADC spectra for PMT %d", ipmt+1), 300, 0, 20);
-	   fscaled_temp_mk2[ipmt] = new TH1F(Form("fscaled_temp_mk2_pmt%d",ipmt+1), Form("Scaled ADC spectra for PMT %d", ipmt+1), 300, 0, 20);
-
-	   //Fill this histogram bin by bin
-	   for (Int_t ibin=0; ibin < nbins; ibin++)
-	     {
-	       Double_t y = PulseInt[ipmt]->GetBinContent(ibin);
-	       Double_t x = PulseInt[ipmt]->GetXaxis()->GetBinCenter(ibin);
-	       Double_t x_scaled_mk1 = x/xmean;
-	       Double_t x_scaled_mk2 = x/xmean_mk2;
-	       Int_t bin_scaled_mk1 = fscaled_temp[ipmt]->GetXaxis()->FindBin(x_scaled_mk1); 
-	       Int_t bin_scaled_mk2 = fscaled_temp_mk2[ipmt]->GetXaxis()->FindBin(x_scaled_mk2);
-	       fscaled_temp[ipmt]->SetBinContent(bin_scaled_mk1,y);
-	       fscaled_temp_mk2[ipmt]->SetBinContent(bin_scaled_mk2,y);
-	     }
-	   fscaled_combined[ipmt]->Add(fscaled_temp[ipmt]);
-	   fscaled_combined_mk2[ipmt]->Add(fscaled_temp_mk2[ipmt]);	
-
-	   //Normalize the histogram for ease of fitting
-	   fscaled_combined[ipmt]->Scale(1.0/fscaled_combined[ipmt]->Integral(), "width");
-	   fscaled_combined_mk2[ipmt]->Scale(1.0/fscaled_combined[ipmt]->Integral(), "width");
-	 }// This brace marks the end of the loop over PMTs
+	} //This brace marks the end of TracksFired strategy   
      
-    }   // Combine each PMT into one final histogram
-
-  if (fCut)
-    {
-      fscaled_total = new TH1F("fscaled_total", "Scaled ADC spectra for all PMTs;NPE;Normalized Counts", 300, 0, 20);
-      fscaled_total_mk2 = new TH1F("fscaled_total_mk2", "Scaled ADC spectra for all PMTs;NPE;Normalized Counts", 300, 0, 20);
-      for (Int_t i=0; i<4; i++)
-	{
-	  fscaled_total->Add(fscaled_combined[i]);
-	  fscaled_total_mk2->Add(fscaled_combined_mk2[i]);
-	}
-
-      fscaled_total->Scale(1.0/fscaled_total->Integral(), "width");
-      fscaled_total_mk2->Scale(1.0/fscaled_total_mk2->Integral(), "width");
-
-      //Display the Poisson characteristics of the ADC spectra
-      if (fFullShow) scaled_total = new TCanvas("scaled_total", "Scaled ADC of all PMTs showing Poisson Fit");
-      if (fFullShow) scaled_total->Divide(2,1);
-      if (fFullShow) scaled_total->cd(1);
-      Poisson->SetRange(0, 20);
-      Poisson->SetParameter(0, Poisson_mean);
-      Poisson->SetParameter(1, 0.8);
-      Poisson->SetParLimits(0, Poisson_mean - 1.0, Poisson_mean + 3.0);
-      fFullShow ? fscaled_total->Fit("Poisson","RQ") : fscaled_total->Fit("Poisson","RQN");
-      Pois_Chi[0] = Poisson->GetChisquare();
-      if (fFullShow) scaled_total->cd(2);
-      fFullShow ? fscaled_total_mk2->Fit("Poisson","RQ") : fscaled_total_mk2->Fit("Poisson","RQN");
-      Pois_Chi[1] = Poisson->GetChisquare();
-    } 
-
-  printf("\n\n"); 
+    }   
 
   //Output the actual calibration information
   //cout << "Calibration constants are (where the '*' indicates the better value)\nPMT#: First Guess  Second Guess\n" << endl;
@@ -1447,13 +1382,13 @@ void calibration::Terminate()
 
   else
     {
-      calibration <<("phgcer_adc_to_npe are: ")<<endl; 
+      calibration <<("; phgcer_adc_to_npe are: ")<<endl; 
 
       for (Int_t ipmt = 0; ipmt < 4; ipmt++)
 	{
 	  //calibration << Form("phgcer_adc_to_npe: PMT%i = ", 1+ipmt);
 
-	  calibration << Form("1./%3.3f. ",calibration_mk1[ipmt]);
+	  calibration << Form("1.0/%3.3f, ",calibration_mk1[ipmt]);
 
 	  // calibration << Form("1./%3.3f. ",calibration_mk1[ipmt],  calibration_mk1Err[ipmt])<<endl;
 	  // calibration << Form("%3.3f  +/-  %3.3f ",calibration_mk1[ipmt],  calibration_mk1Err[ipmt] )<<endl;
@@ -1463,7 +1398,7 @@ void calibration::Terminate()
       for (Int_t ipmt = 0; ipmt < 4; ipmt++)
 	{
 	  // calibration << Form("From quality control, phgcer_adc_to_npe");
-	  calibration << Form("1./%3.3f. ",calibration_mk2[ipmt]);
+	  calibration << Form("1./%3.3f, ",calibration_mk2[ipmt]);
 
 	  // calibration << Form("1./%3.3f. ", (pmt_calib[ipmt] < pmt_calib_mk2[ipmt]) ? calibration_mk1[ipmt] : calibration_mk2[ipmt]);
 	  //calibration << Form("%3.3f  +/-  %3.3f ",calibration_mk2[ipmt],  calibration_mk2Err[ipmt] )<<endl;
@@ -1489,7 +1424,7 @@ void calibration::Terminate()
 	  //calibration << Form("1./%3.3f. ",calibration_mk1[ipmt]);
 
 	  // calibration << Form("1./%3.3f. ",calibration_mk1[ipmt],  calibration_mk1Err[ipmt])<<endl;
-	  calibration1 << Form("%3.3f  +/-  %3.3f ",calibration_mk1[ipmt],  calibration_mk1Err[ipmt] )<<endl;
+	  calibration1 << Form("%3.3f  +/-  %3.3f, ",calibration_mk1[ipmt],  calibration_mk1Err[ipmt] )<<endl;
 	}
        calibration1 << ("From quality control")<<endl;
 
@@ -1499,7 +1434,7 @@ void calibration::Terminate()
 	  // calibration1 << Form("1./%3.3f. ",calibration_mk2[ipmt]);
 
 	  // calibration << Form("1./%3.3f. ", (pmt_calib[ipmt] < pmt_calib_mk2[ipmt]) ? calibration_mk1[ipmt] : calibration_mk2[ipmt]);
-	  calibration1 << Form("%3.3f  +/-  %3.3f ",calibration_mk2[ipmt],  calibration_mk2Err[ipmt] )<<endl;
+	  calibration1 << Form("%3.3f  +/-  %3.3f ,",calibration_mk2[ipmt],  calibration_mk2Err[ipmt] )<<endl;
 
 	}
 
