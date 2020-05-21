@@ -5,10 +5,29 @@
 #include "TLegend.h"
 #include "TArrow.h"
 #include "TLatex.h"
+#include "fstream"
 
 void plot(){
 
 // The values and the errors on the Y axis
+
+char text1[200];
+
+  fstream file;
+  file.open ("example.txt",ios::in | ios::out);
+
+  cout << "Write text to be written on file." << endl;
+  cin.getline(text1, sizeof(text1));
+
+  // Writing on file
+   file << text1 << endl;
+
+  // Reding from file
+  file >> text1;
+  cout << text1 << endl;
+ 
+  //closing the file
+  file.close();
 
 const int n_points=10;
 double x_vals[n_points]= {1,2,3,4,5,6,7,8,9,10};

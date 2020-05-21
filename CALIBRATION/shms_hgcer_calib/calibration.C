@@ -1424,7 +1424,7 @@ void calibration::Terminate()
 	  //calibration << Form("1./%3.3f. ",calibration_mk1[ipmt]);
 
 	  // calibration << Form("1./%3.3f. ",calibration_mk1[ipmt],  calibration_mk1Err[ipmt])<<endl;
-	  calibration1 << Form("%3.3f  +/-  %3.3f, ",calibration_mk1[ipmt],  calibration_mk1Err[ipmt] )<<endl;
+	  calibration1 << Form("%3i %3.3f  %3.3f",ipmt+1, calibration_mk1[ipmt],  calibration_mk1Err[ipmt] )<<endl;
 	}
        calibration1 << ("From quality control")<<endl;
 
@@ -1434,7 +1434,7 @@ void calibration::Terminate()
 	  // calibration1 << Form("1./%3.3f. ",calibration_mk2[ipmt]);
 
 	  // calibration << Form("1./%3.3f. ", (pmt_calib[ipmt] < pmt_calib_mk2[ipmt]) ? calibration_mk1[ipmt] : calibration_mk2[ipmt]);
-	  calibration1 << Form("%3.3f  +/-  %3.3f ,",calibration_mk2[ipmt],  calibration_mk2Err[ipmt] )<<endl;
+	  calibration1 << Form("%3i %3.3f  %3.3f", ipmt+1, calibration_mk2[ipmt],  calibration_mk2Err[ipmt] )<<endl;
 
 	}
 
