@@ -1,4 +1,3 @@
-
 #define calibration_cxx
 // The class definition in calibration.h has been generated automatically
 // by the ROOT utility TTree::MakeSelector(). This class is derived
@@ -786,21 +785,44 @@ void calibration::Terminate()
 		  if (xpeaks[0] > 2.0 && PulseInt_quad[iquad][ipmt]->GetBinContent(PulseInt_quad[iquad][ipmt]->GetXaxis()->FindBin(xpeaks[0])) > 40) RChi2[ipad-1] = Gauss2->GetChisquare()/Gauss2->GetNDF(); 
 		  if (xpeaks[0] > 2.0 && PulseInt_quad[iquad][ipmt]->GetBinContent(PulseInt_quad[iquad][ipmt]->GetXaxis()->FindBin(xpeaks[0])) > 40) mean_err[ipad-1] = Gauss2->GetParError(1);
 
-		  // Set Boolean of whether fit is good or not here
+
+		  if (PulseInt_quad[iquad][ipmt]->GetBinContent(PulseInt_quad[iquad][ipmt]->GetXaxis()->FindBin(xpeaks[0])) > 2000)
+	 
+		    {	  // Set Boolean of whether fit is good or not here
 		    
 		  TPaveText *BadFitText = new TPaveText (0.65, 0.15, 0.85, 0.2, "NDC");  
 		  BadFitText->SetTextColor(kRed);
 		  BadFitText->AddText("Bad fit");  	  
-		  if (RChi2[ipad-1] < 0.5 || RChi2[ipad-1] > 10)
+		  if (RChi2[ipad-1] < 0.5 || RChi2[ipad-1] > 30)
 		    {
 		      GoodFit[ipad-1] = kFALSE; 
 		      BadFitText->Draw("same");
 		    } 
-		  else if  (RChi2[ipad-1] > 0.5 && RChi2[ipad-1] < 10) 
+		  else if  (RChi2[ipad-1] > 0.5 && RChi2[ipad-1] < 30) 
 		    {
 		      GoodFit[ipad-1] = kTRUE;
 		      GoodFitText->Draw("same");
-		    } 		     	 			  	
+		    } 
+		    }
+
+		  else
+		    {
+
+		      TPaveText *BadFitText = new TPaveText (0.65, 0.15, 0.85, 0.2, "NDC");  
+		      BadFitText->SetTextColor(kRed);
+		      BadFitText->AddText("Bad fit");  	  
+		      if (RChi2[ipad-1] < 0.5 || RChi2[ipad-1] > 10)
+			{
+			  GoodFit[ipad-1] = kFALSE; 
+			  BadFitText->Draw("same");
+			} 
+		      else if  (RChi2[ipad-1] > 0.5 && RChi2[ipad-1] < 10) 
+			{
+			  GoodFit[ipad-1] = kTRUE;
+			  GoodFitText->Draw("same");
+			} 
+		    }
+			  	
 		    
 		  ipad++;
 		 	 
