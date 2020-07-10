@@ -4,7 +4,7 @@
 #include <string>
 #include <stdio.h>
 
-void run_cal(Int_t RunNumber1 = 0,Int_t RunNumber2 = 0,Int_t RunNumber3 = 0, Int_t RunNumber4 = 0, Int_t NumEvents = 0, Int_t coin = 0)
+void run_cal(Int_t RunNumber1 = 0,Int_t RunNumber2 = 0,Int_t RunNumber3 = 0, Int_t NumEvents = 0, Int_t coin = 0)
 {
   if (RunNumber1 == 0)
     {
@@ -24,12 +24,12 @@ void run_cal(Int_t RunNumber1 = 0,Int_t RunNumber2 = 0,Int_t RunNumber3 = 0, Int
       cin >> RunNumber3;
       if (RunNumber3 <= 0) return;
     }
-  if (RunNumber4 == 0)
+  /*if (RunNumber4 == 0)
     {
       cout << "Enter a Run Number (-1 to exit): ";
       cin >> RunNumber4;
       if (RunNumber4 <= 0) return;
-    }
+      }*/
   if (NumEvents == 0)
     {
       cout << "\nNumber of Events to analyze for all runs: ";
@@ -58,8 +58,8 @@ void run_cal(Int_t RunNumber1 = 0,Int_t RunNumber2 = 0,Int_t RunNumber3 = 0, Int
   TChain ch("T");
   if (coin == 1){ch.Add(Form("../../ROOTfiles/shms_coin_replay_production_all_%d_%d.root",RunNumber1, NumEvents));
     ch.Add(Form("../../ROOTfiles/shms_coin_replay_production_all_%d_%d.root", RunNumber2, NumEvents)); 
-    ch.Add(Form("../../ROOTfiles/shms_coin_replay_production_all_%d_%d.root",RunNumber3, NumEvents));  
-    ch.Add(Form("../../ROOTfiles/shms_coin_replay_production_all_%d_%d.root",RunNumber4, NumEvents));}  
+    ch.Add(Form("../../ROOTfiles/shms_coin_replay_production_all_%d_%d.root",RunNumber3, NumEvents));}  
+    //ch.Add(Form("../../ROOTfiles/shms_coin_replay_production_all_%d_%d.root",RunNumber4, NumEvents));}  
 
   else ch.Add(Form("ROOTfiles/shms_replay_production_all_%d_%d.root", RunNumber1, NumEvents));
   TProof *proof = TProof::Open("workers=4");
@@ -82,12 +82,12 @@ void run_cal(Int_t RunNumber1 = 0,Int_t RunNumber2 = 0,Int_t RunNumber3 = 0, Int
 	  if (temp.is_open())
 	    {  
 	      //if (calib_option.Contains("NGC")) rename("calibration_temp.txt", Form("../../PARAM/SHMS/NGCER/CALIB/pngcer_calib_%d.param", RunNumber1));
-	      rename("calibration_temp.txt", Form("Calibration_plots/phgcer_calib%d-%d.param", RunNumber1, RunNumber4));
-	      rename("calibration_temp1.txt", Form("Calibration_plots/phgcer_calib_err%d-%d.param", RunNumber1, RunNumber4));
+	      rename("calibration_temp.txt", Form("Calibration_plots/phgcer_calib%d-%d.param", RunNumber1, RunNumber3));
+	      rename("calibration_temp1.txt", Form("Calibration_plots/phgcer_calib_err%d-%d.param", RunNumber1, RunNumber3));
 
 	      // else rename("calibration_temp.txt", Form("../../PARAM/SHMS/HGCER/CALIB/phgcer_calib_%d.param", RunNumber));
 	    
-	      rename("Calibration_plots/Calibration_plots.pdf", Form("Calibration_plots/Calibration_plots%d-%d.pdf", RunNumber1, RunNumber4));
+	      rename("Calibration_plots/Calibration_plots.pdf", Form("Calibration_plots/Calibration_plots%d-%d.pdf", RunNumber1, RunNumber3));
 	    }
 	  else cout << "Error opening calibration constants, may have to update constants manually!" << endl;
 	    

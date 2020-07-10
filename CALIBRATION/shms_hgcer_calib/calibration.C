@@ -1,4 +1,3 @@
-
 #define calibration_cxx
 // The class definition in calibration.h has been generated automatically
 // by the ROOT utility TTree::MakeSelector(). This class is derived
@@ -219,24 +218,24 @@ Bool_t calibration::Process(Long64_t entry)
 
 	  if(ipmt ==0){
 
-	    if(P_hgcer_goodAdcTdcDiffTime[ipmt] >38 || P_hgcer_goodAdcTdcDiffTime[ipmt] < 34) continue;                      //13 9
+	    if(P_hgcer_goodAdcTdcDiffTime[ipmt] >40 || P_hgcer_goodAdcTdcDiffTime[ipmt] < 33) continue;                      //13 9
 	    fTim1->Fill(P_hgcer_goodAdcTdcDiffTime[ipmt]);
 	  }
 
 	  if(ipmt ==1){
 
-	    if(P_hgcer_goodAdcTdcDiffTime[ipmt] >36 || P_hgcer_goodAdcTdcDiffTime[ipmt] < 33) continue;                          //12 7
+	    if(P_hgcer_goodAdcTdcDiffTime[ipmt] >38 || P_hgcer_goodAdcTdcDiffTime[ipmt] < 31) continue;                          //12 7
 	    fTim2->Fill(P_hgcer_goodAdcTdcDiffTime[ipmt]);
       	  }
 
 	  if(ipmt ==2){
-	    if(P_hgcer_goodAdcTdcDiffTime[ipmt] >36 || P_hgcer_goodAdcTdcDiffTime[ipmt] < 33) continue;                           //12 7
+	    if(P_hgcer_goodAdcTdcDiffTime[ipmt] >38 || P_hgcer_goodAdcTdcDiffTime[ipmt] < 30) continue;                           //12 
 	    fTim3->Fill(P_hgcer_goodAdcTdcDiffTime[ipmt]);
       
 	  }
 	  if(ipmt ==3){
 
-	    if(P_hgcer_goodAdcTdcDiffTime[ipmt] >38 || P_hgcer_goodAdcTdcDiffTime[ipmt] < 30) continue;                                  //12 8
+	    if(P_hgcer_goodAdcTdcDiffTime[ipmt] >39 || P_hgcer_goodAdcTdcDiffTime[ipmt] < 31) continue;                                  //12 8
 	    fTim4->Fill(P_hgcer_goodAdcTdcDiffTime[ipmt]);
       
 	  }
@@ -507,7 +506,7 @@ void calibration::Terminate()
 
   //gStyle->SetOptStat(1000000001);
   // Path to save the print pdf file 
-  TString foutname = "/home/vijay/work/Jlab/hallc_replay_lt/CALIBRATION/shms_hgcer_calib/Calibration_plots/Calibration_plots";
+  TString foutname = "/u/group/c-kaonlt/USERS/vijay/hallc_replay_lt/CALIBRATION/shms_hgcer_calib/Calibration_plots/Calibration_plots";
 
   //Print all plots in a single pdf 
   TString outputpdf = foutname + ".pdf";
@@ -618,8 +617,8 @@ void calibration::Terminate()
   Poisson_mean = 5.5;  
 
   //Linear function used to determine goodness-of-fit for NPE spacing
-  TF1 *Linear = new TF1("Linear",linear,0,5,2);
-  Linear->SetParNames("Slope", "Intercept");
+  //TF1 *Linear = new TF1("Linear",linear,0,5,2);
+  //  Linear->SetParNames("Slope", "Intercept");
       
   //An array is used to store the means for the SPE, and to determine NPE spacing
   Double_t mean[3];
@@ -786,22 +785,40 @@ void calibration::Terminate()
 		  if (xpeaks[0] > 2.0 && PulseInt_quad[iquad][ipmt]->GetBinContent(PulseInt_quad[iquad][ipmt]->GetXaxis()->FindBin(xpeaks[0])) > 40) RChi2[ipad-1] = Gauss2->GetChisquare()/Gauss2->GetNDF(); 
 		  if (xpeaks[0] > 2.0 && PulseInt_quad[iquad][ipmt]->GetBinContent(PulseInt_quad[iquad][ipmt]->GetXaxis()->FindBin(xpeaks[0])) > 40) mean_err[ipad-1] = Gauss2->GetParError(1);
 
+		  if (PulseInt_quad[iquad][ipmt]->GetBinContent(PulseInt_quad[iquad][ipmt]->GetXaxis()->FindBin(xpeaks[0])) > 2000)
 		  // Set Boolean of whether fit is good or not here
-		    
+		    {  
 		  TPaveText *BadFitText = new TPaveText (0.65, 0.15, 0.85, 0.2, "NDC");  
 		  BadFitText->SetTextColor(kRed);
 		  BadFitText->AddText("Bad fit");  	  
-		  if (RChi2[ipad-1] < 0.5 || RChi2[ipad-1] > 10)
+		  if (RChi2[ipad-1] < 0.5 || RChi2[ipad-1] > 50)
 		    {
 		      GoodFit[ipad-1] = kFALSE; 
 		      BadFitText->Draw("same");
 		    } 
-		  else if  (RChi2[ipad-1] > 0.5 && RChi2[ipad-1] < 10) 
+		  else if  (RChi2[ipad-1] > 0.5 && RChi2[ipad-1] < 50) 
 		    {
 		      GoodFit[ipad-1] = kTRUE;
 		      GoodFitText->Draw("same");
 		    } 		     	 			  	
-		    
+		    }
+
+		  else 		    
+		    {  
+		      TPaveText *BadFitText = new TPaveText (0.65, 0.15, 0.85, 0.2, "NDC");  
+		      BadFitText->SetTextColor(kRed);
+		      BadFitText->AddText("Bad fit");  	  
+		      if (RChi2[ipad-1] < 0.5 || RChi2[ipad-1] > 10)
+			{
+			  GoodFit[ipad-1] = kFALSE; 
+			  BadFitText->Draw("same");
+			} 
+		      else if  (RChi2[ipad-1] > 0.5 && RChi2[ipad-1] < 10) 
+			{
+			  GoodFit[ipad-1] = kTRUE;
+			  GoodFitText->Draw("same");
+			} 		     	 			  	
+		    } 
 		  ipad++;
 		 	 
 		}
@@ -890,16 +907,17 @@ void calibration::Terminate()
 	  Function->SetParameter(8,0.75);
 	  Function->SetParameter(9,0.12);
 	  Function->SetParameter(10,4.0);
-	  Function->SetParameter(11,0.75);
+	  Function->SetParameter(11,1);
 	  Function->SetParameter(12,8.0);
 	  Function->SetParameter(13,0.7);
 	  Function->SetParameter(14,  Poisson->GetParameter(0));  
 	  Function ->SetParameter(15, Poisson->GetParameter(1));
  
 	  // Constraints on mean 	 
-	  Function->SetParLimits(1, 1 - 3*xscaleErr, 1 + 3*xscaleErr);	
-	  Function->SetParLimits(4, 2 - 3*xscaleErr, 2 + 3*xscaleErr);
-	  Function->SetParLimits(7, 3 - 3*xscaleErr, 3 + 3*xscaleErr);
+	  Function->SetParLimits(1, 1 - 2*xscaleErr, 1 + 2*xscaleErr);	
+	  Function->SetParLimits(4, 2 - 2*xscaleErr, 2 + 2*xscaleErr);
+	  Function->SetParLimits(7, 3 - 2*xscaleErr, 3 + 2*xscaleErr);
+	  Function->SetParLimits(10,4 - 2*xscaleErr, 4 + 2*xscaleErr);
 
 	  // Clone the histogram before fit it	 
 	  scaled_clone = (TH1F*)fscaled[ipmt]->Clone("scaled_clone");	 
@@ -1132,6 +1150,8 @@ void calibration::Terminate()
 	  gr_npe->GetYaxis()->SetTitle("Photoelectron peak (NPE)");
 
 	  // Fit with linear function when intercept is not zero
+	  TF1 *Linear = new TF1("Linear",linear,0,5,2);
+	  Linear->SetParNames("Slope", "Intercept");
 	  Linear->SetParameter(0.0, 1.0);
           Linear->SetParameter(1.0, 0.0);
 	  Linear->SetLineColor(1);
