@@ -1,0 +1,10 @@
+phgcer_adc_to_npe are: 
+  1 6.132  0.050
+  2 6.771  0.057
+  3 5.476  0.094
+  4 -nan  inf
+From quality control
+  1 6.104  0.069
+  2 6.745  0.065
+  3 5.369  0.107
+  4 -nan  nan
