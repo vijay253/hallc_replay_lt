@@ -2,6 +2,7 @@
 *~
 *#*#*
 *.d
+*.param
 *.so
 *.pcm
 *.png

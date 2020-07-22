@@ -85,25 +85,27 @@ void calibration::SlaveBegin(TTree * /*tree*/)
   Info("SlaveBegin", "cuts %s performed", (fCut ? "are" : "are not"));
   if (fCut) Info("SlaveBegin", "cutting for '%s'", (fPions ? "pions" : "electrons"));
 
-  // Inintialize the histograms. Note they are binned per ADC channel which will be changed in the calibration analysis.
+  // Initialize the histograms. Note they are binned per ADC channel which will be changed in the calibration analysis.
+
   Int_t ADC_min;
   Int_t ADC_max;
   Int_t bins;
 
-  Int_t ADC_poiss_min;
-  Int_t ADC_poiss_max;
-  Int_t bins_poiss;
-
   ADC_min = 0;
   ADC_max = 35;
   bins = 2*(abs(ADC_min) + abs(ADC_max));
+
+  // Initialize the histograms, they used in the quality control work. Note they are binned per ADC channel which will be changed in the calibration analysis
+
+  Int_t ADC_poiss_min;
+  Int_t ADC_poiss_max;
+  Int_t bins_poiss;
 
   ADC_poiss_min = 0;
   ADC_poiss_max = 200;
   bins_poiss = 2*(abs(ADC_poiss_min) + abs(ADC_poiss_max));
   
   
-
   fPulseInt_poiss = new TH1F*[4];
   fPulseInt = new TH1F*[4];
   fPulseInt_quad = new TH1F**[4];
@@ -137,7 +139,7 @@ void calibration::SlaveBegin(TTree * /*tree*/)
   fTiming_Cut = new TH1F("Timing_Cut", "Timing cut used for 'good' hits; Time (ns);Counts", 200, -10, 50);
   GetOutputList()->Add(fTiming_Cut);
 
-  //Histograms for timing info for each PTMs
+  //Individual Histogram for timing info for each PTM
 
   fTim1 = new TH1F("Timing_PMT1", "ADC TDC Diff PMT1 ; Time (ns) ;Counts", 200, -10.0, 50.0);
   GetOutputList()->Add(fTim1);
@@ -196,7 +198,7 @@ Bool_t calibration::Process(Long64_t entry)
 
   //Define quantities to loop over
   Int_t fpmts;
-  fpmts = fhgc_pmts;   //Note HGC & NGC have the same # of PMTS
+  fpmts = fhgc_pmts;   
 
   //Require only one good track reconstruction for the event                         
   if (*Ndata_P_tr_beta != 1) return kTRUE;
@@ -214,36 +216,32 @@ Bool_t calibration::Process(Long64_t entry)
 	{	  
 	  fTiming_Full->Fill(P_hgcer_goodAdcTdcDiffTime[ipmt]);    
    
-	  //Perform a loose timing cut    
+	  //Perform a loose timing cut on each PMT   
 
 	  if(ipmt ==0){
 
-	    if(P_hgcer_goodAdcTdcDiffTime[ipmt] >40 || P_hgcer_goodAdcTdcDiffTime[ipmt] < 33) continue;                      //13 9
+	    if(P_hgcer_goodAdcTdcDiffTime[ipmt] >38 || P_hgcer_goodAdcTdcDiffTime[ipmt] < 34) continue;                      
 	    fTim1->Fill(P_hgcer_goodAdcTdcDiffTime[ipmt]);
 	  }
 
 	  if(ipmt ==1){
 
-	    if(P_hgcer_goodAdcTdcDiffTime[ipmt] >38 || P_hgcer_goodAdcTdcDiffTime[ipmt] < 31) continue;                          //12 7
+	    if(P_hgcer_goodAdcTdcDiffTime[ipmt] >36 || P_hgcer_goodAdcTdcDiffTime[ipmt] < 33) continue;                          
 	    fTim2->Fill(P_hgcer_goodAdcTdcDiffTime[ipmt]);
       	  }
 
 	  if(ipmt ==2){
-	    if(P_hgcer_goodAdcTdcDiffTime[ipmt] >38 || P_hgcer_goodAdcTdcDiffTime[ipmt] < 30) continue;                           //12 
+	    if(P_hgcer_goodAdcTdcDiffTime[ipmt] >36 || P_hgcer_goodAdcTdcDiffTime[ipmt] < 33) continue;                           
 	    fTim3->Fill(P_hgcer_goodAdcTdcDiffTime[ipmt]);
       
 	  }
 	  if(ipmt ==3){
 
-	    if(P_hgcer_goodAdcTdcDiffTime[ipmt] >39 || P_hgcer_goodAdcTdcDiffTime[ipmt] < 31) continue;                                  //12 8
+	    if(P_hgcer_goodAdcTdcDiffTime[ipmt] >38 || P_hgcer_goodAdcTdcDiffTime[ipmt] < 30) continue;                                  
 	    fTim4->Fill(P_hgcer_goodAdcTdcDiffTime[ipmt]);
       
 	  }
-	  // cut modified by VK, 24/05/19
-
-	  //  if(P_hgcer_goodAdcTdcDiffTime[ipmt] >40 || P_hgcer_goodAdcTdcDiffTime[ipmt] < 30) continue;
-	  // fTiming_Cut->Fill(P_hgcer_goodAdcTdcDiffTime[ipmt]);
-	   
+	  
 	  //Cuts to remove entries corresponding to a PMT not registering a hit    
 	  if (P_hgcer_goodAdcPulseInt[ipmt] == 0.0) continue;
 	 	  
@@ -252,11 +250,6 @@ Bool_t calibration::Process(Long64_t entry)
 	    {
 	      //Retrieve particle ID information
 
-	      //  Float_t central_p = 8.035;             // old value 6.0530
-
-
-	      //  Float_t p = ((P_gtr_dp[0]/100.0)*central_p) + central_p;
-
 	      Double_t p = *P_gtr_p;
 
 	      //Fill histogram visualizaing the electron selection
@@ -264,15 +257,10 @@ Bool_t calibration::Process(Long64_t entry)
 	      fCut_enorm->Fill(*P_cal_etotnorm);
 
 	      //Cut on Shower vs preshower is a tilted ellipse, this requires an angle of rotation (in radians), x/y center, semimajor and semiminor axis
-	      //Float_t eangle = 3.0*3.14159/4.0;
-	      //Float_t ex_center = 0.66;
-	      //Float_t ey_center = 0.35;
-	      //Float_t esemimajor_axis = 0.28;
-	      //Float_t esemiminor_axis = 0.04;
-
+	  
 	      Float_t eangle = 3.0*3.14159/4.0;                             
-	      Float_t ex_center = 0.65;                                  // Old value 0.375
-	      Float_t ey_center = 0.35;                                 // old value 0.360
+	      Float_t ex_center = 0.65;                                 
+	      Float_t ey_center = 0.35;                                
 	      Float_t esemimajor_axis = 0.30;
 	      Float_t esemiminor_axis = 0.08;
 	      if (pow((*P_cal_fly_earray/p - ex_center)*cos(eangle) + (*P_cal_pr_eplane/p - ey_center)*sin(eangle),2)/pow(esemimajor_axis,2) + 
@@ -309,13 +297,9 @@ Bool_t calibration::Process(Long64_t entry)
 	  if (!fTrack && fCut && fPions)
 	    {
 	      //Retrieve particle ID information
-	      // Float_t central_p = 6.0530;
-	      // Float_t p = ((P_gtr_dp[0]/100.0)*central_p) + central_p;  //
-
 	      //Fill histogram visualizaing the pion selection
 
               Double_t p = *P_gtr_p;
-
 	      fCut_everything->Fill(*P_cal_fly_earray/p, *P_cal_pr_eplane/p);
 	      fCut_enorm->Fill(*P_cal_etotnorm);
 
@@ -362,7 +346,6 @@ Bool_t calibration::Process(Long64_t entry)
  		 //Fill histogram of the full PulseInt spectra for each PMT
 		 fPulseInt[ipmt]->Fill(P_hgcer_goodAdcPulseInt[ipmt]);
 		 fPulseInt_poiss[ipmt]->Fill(P_hgcer_goodAdcPulseInt[ipmt]);
-
 
 		 //Retrieve information for particle tracking from focal plane
 
@@ -506,7 +489,7 @@ void calibration::Terminate()
 
   //gStyle->SetOptStat(1000000001);
   // Path to save the print pdf file 
-  TString foutname = "/u/group/c-kaonlt/USERS/vijay/hallc_replay_lt/CALIBRATION/shms_hgcer_calib/Calibration_plots/Calibration_plots";
+  TString foutname = "/home/vijay/work/Jlab/hallc_replay_lt/CALIBRATION/shms_hgcer_calib/Calibration_plots/Calibration_plots";
 
   //Print all plots in a single pdf 
   TString outputpdf = foutname + ".pdf";
@@ -617,8 +600,8 @@ void calibration::Terminate()
   Poisson_mean = 5.5;  
 
   //Linear function used to determine goodness-of-fit for NPE spacing
-  //TF1 *Linear = new TF1("Linear",linear,0,5,2);
-  //  Linear->SetParNames("Slope", "Intercept");
+  TF1 *Linear = new TF1("Linear",linear,0,5,2);
+  Linear->SetParNames("Slope", "Intercept");
       
   //An array is used to store the means for the SPE, and to determine NPE spacing
   Double_t mean[3];
@@ -785,15 +768,6 @@ void calibration::Terminate()
 		  if (xpeaks[0] > 2.0 && PulseInt_quad[iquad][ipmt]->GetBinContent(PulseInt_quad[iquad][ipmt]->GetXaxis()->FindBin(xpeaks[0])) > 40) RChi2[ipad-1] = Gauss2->GetChisquare()/Gauss2->GetNDF(); 
 		  if (xpeaks[0] > 2.0 && PulseInt_quad[iquad][ipmt]->GetBinContent(PulseInt_quad[iquad][ipmt]->GetXaxis()->FindBin(xpeaks[0])) > 40) mean_err[ipad-1] = Gauss2->GetParError(1);
 
-<<<<<<< HEAD
-		  if (PulseInt_quad[iquad][ipmt]->GetBinContent(PulseInt_quad[iquad][ipmt]->GetXaxis()->FindBin(xpeaks[0])) > 2000)
-		  // Set Boolean of whether fit is good or not here
-		    {  
-		  TPaveText *BadFitText = new TPaveText (0.65, 0.15, 0.85, 0.2, "NDC");  
-		  BadFitText->SetTextColor(kRed);
-		  BadFitText->AddText("Bad fit");  	  
-		  if (RChi2[ipad-1] < 0.5 || RChi2[ipad-1] > 50)
-=======
 
 		  if (PulseInt_quad[iquad][ipmt]->GetBinContent(PulseInt_quad[iquad][ipmt]->GetXaxis()->FindBin(xpeaks[0])) > 2000)
 	 
@@ -803,22 +777,10 @@ void calibration::Terminate()
 		  BadFitText->SetTextColor(kRed);
 		  BadFitText->AddText("Bad fit");  	  
 		  if (RChi2[ipad-1] < 0.5 || RChi2[ipad-1] > 30)
->>>>>>> refs/remotes/origin/offline
 		    {
 		      GoodFit[ipad-1] = kFALSE; 
 		      BadFitText->Draw("same");
 		    } 
-<<<<<<< HEAD
-		  else if  (RChi2[ipad-1] > 0.5 && RChi2[ipad-1] < 50) 
-		    {
-		      GoodFit[ipad-1] = kTRUE;
-		      GoodFitText->Draw("same");
-		    } 		     	 			  	
-		    }
-
-		  else 		    
-		    {  
-=======
 		  else if  (RChi2[ipad-1] > 0.5 && RChi2[ipad-1] < 30) 
 		    {
 		      GoodFit[ipad-1] = kTRUE;
@@ -829,7 +791,6 @@ void calibration::Terminate()
 		  else
 		    {
 
->>>>>>> refs/remotes/origin/offline
 		      TPaveText *BadFitText = new TPaveText (0.65, 0.15, 0.85, 0.2, "NDC");  
 		      BadFitText->SetTextColor(kRed);
 		      BadFitText->AddText("Bad fit");  	  
@@ -842,15 +803,10 @@ void calibration::Terminate()
 			{
 			  GoodFit[ipad-1] = kTRUE;
 			  GoodFitText->Draw("same");
-<<<<<<< HEAD
-			} 		     	 			  	
-		    } 
-=======
 			} 
 		    }
 			  	
 		    
->>>>>>> refs/remotes/origin/offline
 		  ipad++;
 		 	 
 		}
@@ -939,17 +895,16 @@ void calibration::Terminate()
 	  Function->SetParameter(8,0.75);
 	  Function->SetParameter(9,0.12);
 	  Function->SetParameter(10,4.0);
-	  Function->SetParameter(11,1);
+	  Function->SetParameter(11,0.75);
 	  Function->SetParameter(12,8.0);
 	  Function->SetParameter(13,0.7);
 	  Function->SetParameter(14,  Poisson->GetParameter(0));  
 	  Function ->SetParameter(15, Poisson->GetParameter(1));
  
 	  // Constraints on mean 	 
-	  Function->SetParLimits(1, 1 - 2*xscaleErr, 1 + 2*xscaleErr);	
-	  Function->SetParLimits(4, 2 - 2*xscaleErr, 2 + 2*xscaleErr);
-	  Function->SetParLimits(7, 3 - 2*xscaleErr, 3 + 2*xscaleErr);
-	  Function->SetParLimits(10,4 - 2*xscaleErr, 4 + 2*xscaleErr);
+	  Function->SetParLimits(1, 1 - 3*xscaleErr, 1 + 3*xscaleErr);	
+	  Function->SetParLimits(4, 2 - 3*xscaleErr, 2 + 3*xscaleErr);
+	  Function->SetParLimits(7, 3 - 3*xscaleErr, 3 + 3*xscaleErr);
 
 	  // Clone the histogram before fit it	 
 	  scaled_clone = (TH1F*)fscaled[ipmt]->Clone("scaled_clone");	 
@@ -1182,8 +1137,6 @@ void calibration::Terminate()
 	  gr_npe->GetYaxis()->SetTitle("Photoelectron peak (NPE)");
 
 	  // Fit with linear function when intercept is not zero
-	  TF1 *Linear = new TF1("Linear",linear,0,5,2);
-	  Linear->SetParNames("Slope", "Intercept");
 	  Linear->SetParameter(0.0, 1.0);
           Linear->SetParameter(1.0, 0.0);
 	  Linear->SetLineColor(1);

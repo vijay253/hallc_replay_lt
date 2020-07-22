@@ -18,7 +18,7 @@ int calib()
   gROOT->ForceStyle();
 
   TCanvas * plot = new TCanvas("plot", "Consistency of parameters"); plot->SetGrid();
-  TMultiGraph* mg = new TMultiGraph(); mg->SetTitle("PMT 1");  // Add title of the plot
+  TMultiGraph* mg = new TMultiGraph(); mg->SetTitle("PMT 4");  // Add title of the plot
 
   TGraphErrors *gr1 = new TGraphErrors("input_pmt4_guess1.txt","%lg %lg %lg");
   gr1->SetMarkerColor(kRed);
@@ -35,8 +35,8 @@ int calib()
   mg->Draw("apl");
   mg->GetXaxis()->SetTitle("Run Numbers");                // Add title of the X axis
   mg->GetYaxis()->SetTitle("Calibration Constants");     // Add title of the Y axis
-  mg->GetHistogram()->SetMaximum(8);                    // Set the range of Y axis           
-  mg->GetHistogram()->SetMinimum(5.2);
+  mg->GetHistogram()->SetMaximum(8.0);                  // Set the range of Y axis           
+  mg->GetHistogram()->SetMinimum(6.5);                 // ranges, pmt1 7, 5.6,pmt2 8.0, 6.0 pmt3 6.0 5.0 pmt4 8.0, 6.5
 
   TLegend* leg = new TLegend(.6,.7,.9,.9);            // Draw the Legend
   leg->SetFillColor(0);
