@@ -41,9 +41,9 @@ void run_DetTCuts(string RunPrefix = "", Int_t RunNumber = 0, Int_t MaxEvent = 0
   cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
   if(Hostname.Contains("farm")){
-    Rootpath = "/group/c-kaonlt/USERS/${USER}/ROOTfiles/";
-    Outpath = "/group/c-kaonlt/USERS/${USER}/OUTPUT/";
-    Histopath = "/group/c-kaonlt/USERS/${USER}/HISTOGRAMS/";
+    Rootpath = "/group/c-kaonlt/USERS/${USER}/hallc_replay_lt/ROOTfilesMKJTest/";        
+    Outpath = "/group/c-kaonlt/USERS/${USER}/hallc_replay_lt/OUTPUT/";
+    Histopath = "/group/c-kaonlt/USERS/${USER}/hallc_replay_lt/HISTOGRAMS/";
   }
   else if(Hostname.Contains("qcd")){ // Empty for now, fill in later
     Rootpath = "/group/c-kaonlt/USERS/${USER}/ROOTfiles/";

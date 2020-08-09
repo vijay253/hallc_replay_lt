@@ -135,19 +135,19 @@ Bool_t calibration::Process(Long64_t entry)
       fTiming_Full->Fill(P_hgcer_goodAdcTdcDiffTime[ipmt]);
       //Perform a loose timing cut on each PMT
       if(ipmt ==0){
-	if(P_hgcer_goodAdcTdcDiffTime[ipmt] >25 || P_hgcer_goodAdcTdcDiffTime[ipmt] < -8) continue;                      
+	if(P_hgcer_goodAdcTdcDiffTime[ipmt] >14 || P_hgcer_goodAdcTdcDiffTime[ipmt] < 0) continue;                      
 	fTim1->Fill(P_hgcer_goodAdcTdcDiffTime[ipmt]);
       }
       if(ipmt ==1){
-	if(P_hgcer_goodAdcTdcDiffTime[ipmt] >25 || P_hgcer_goodAdcTdcDiffTime[ipmt] < -8) continue;                          
+	if(P_hgcer_goodAdcTdcDiffTime[ipmt] >14 || P_hgcer_goodAdcTdcDiffTime[ipmt] < 0) continue;                          
 	fTim2->Fill(P_hgcer_goodAdcTdcDiffTime[ipmt]);
       }
       if(ipmt ==2){
-	if(P_hgcer_goodAdcTdcDiffTime[ipmt] >25 || P_hgcer_goodAdcTdcDiffTime[ipmt] < -8) continue;                           
+	if(P_hgcer_goodAdcTdcDiffTime[ipmt] >14 || P_hgcer_goodAdcTdcDiffTime[ipmt] < 0) continue;                           
 	fTim3->Fill(P_hgcer_goodAdcTdcDiffTime[ipmt]);
       }
       if(ipmt ==3){
-	if(P_hgcer_goodAdcTdcDiffTime[ipmt] >25 || P_hgcer_goodAdcTdcDiffTime[ipmt] < -8) continue;                                  
+	if(P_hgcer_goodAdcTdcDiffTime[ipmt] >14 || P_hgcer_goodAdcTdcDiffTime[ipmt] < 0) continue;                                  
 	fTim4->Fill(P_hgcer_goodAdcTdcDiffTime[ipmt]);
       }
 
