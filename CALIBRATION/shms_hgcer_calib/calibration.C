@@ -1,5 +1,8 @@
+<<<<<<< HEAD
 \
 
+=======
+>>>>>>> upstream/offline
 #define calibration_cxx
 // Vijay Kumar, Univerity of Regina - 24/07/20
 // vijay36361@gmail.com
@@ -137,6 +140,7 @@ Bool_t calibration::Process(Long64_t entry)
       fTiming_Full->Fill(P_hgcer_goodAdcTdcDiffTime[ipmt]);
       //Perform a loose timing cut on each PMT
       if(ipmt ==0){
+<<<<<<< HEAD
 	if(P_hgcer_goodAdcTdcDiffTime[ipmt] >12 || P_hgcer_goodAdcTdcDiffTime[ipmt] < 7) continue;                      
 	fTim1->Fill(P_hgcer_goodAdcTdcDiffTime[ipmt]);
       }
@@ -150,6 +154,21 @@ Bool_t calibration::Process(Long64_t entry)
       }
       if(ipmt ==3){
 	if(P_hgcer_goodAdcTdcDiffTime[ipmt] >10 || P_hgcer_goodAdcTdcDiffTime[ipmt] < 6) continue;                                  
+=======
+	if(P_hgcer_goodAdcTdcDiffTime[ipmt] >38 || P_hgcer_goodAdcTdcDiffTime[ipmt] < 34) continue;                      
+	fTim1->Fill(P_hgcer_goodAdcTdcDiffTime[ipmt]);
+      }
+      if(ipmt ==1){
+	if(P_hgcer_goodAdcTdcDiffTime[ipmt] >36 || P_hgcer_goodAdcTdcDiffTime[ipmt] < 33) continue;                          
+	fTim2->Fill(P_hgcer_goodAdcTdcDiffTime[ipmt]);
+      }
+      if(ipmt ==2){
+	if(P_hgcer_goodAdcTdcDiffTime[ipmt] >36 || P_hgcer_goodAdcTdcDiffTime[ipmt] < 33) continue;                           
+	fTim3->Fill(P_hgcer_goodAdcTdcDiffTime[ipmt]);
+      }
+      if(ipmt ==3){
+	if(P_hgcer_goodAdcTdcDiffTime[ipmt] >38 || P_hgcer_goodAdcTdcDiffTime[ipmt] < 30) continue;                                  
+>>>>>>> upstream/offline
 	fTim4->Fill(P_hgcer_goodAdcTdcDiffTime[ipmt]);
       }
 
@@ -407,11 +426,19 @@ void calibration::Terminate()
 
   //Two more arrays are used to store the estimates for the calibration constants and another two to store goodness of calibration
   Double_t calibration_mk1[4], calibration_mk1Err[4], calibration_mk2[4], calibration_mk2Err[4], pmt_calib[4], pmt_calib_mk2[4];
+<<<<<<< HEAD
 
   TPaveText *GoodFitText = new TPaveText (0.65, 0.15, 0.85, 0.2, "NDC");
   GoodFitText->SetTextColor(kGreen);
   GoodFitText->AddText("Good fit");
 
+=======
+
+  TPaveText *GoodFitText = new TPaveText (0.65, 0.15, 0.85, 0.2, "NDC");
+  GoodFitText->SetTextColor(kGreen);
+  GoodFitText->AddText("Good fit");
+
+>>>>>>> upstream/offline
   /* TPaveText *BadFitText = new TPaveText (0.65, 0.15, 0.85, 0.2, "NDC");  
      BadFitText->SetTextColor(kBlack);
      BadFitText->AddText("Bad fit");*/
@@ -471,16 +498,28 @@ void calibration::Terminate()
 	  Gauss2->SetRange(0,16);
 	  Gauss2->SetParameter(0, 200);
 	  Gauss2->SetParameter(1, xpeaks[0]);
+<<<<<<< HEAD
 	  Gauss2->SetParameter(2, 2);
+=======
+	  Gauss2->SetParameter(2, 5.25);
+>>>>>>> upstream/offline
 	  Gauss2->SetParameter(3, 40);
 	  Gauss2->SetParameter(4, xpeaks[1]);	
 	  Gauss2->SetParameter(5, 2.25);
 	  Gauss2->SetParLimits(0, 0.0,PulseInt_quad[iquad][ipmt]->GetBinContent(PulseInt_quad[iquad][ipmt]->GetXaxis()->FindBin(xpeaks[0])));
+<<<<<<< HEAD
 	  Gauss2->SetParLimits(1, xpeaks[0]-1.0, xpeaks[0]+1.0);
 	  Gauss2->SetParLimits(2, 0.5, 2.0);
 	  Gauss2->SetParLimits(3, 0.0,PulseInt_quad[iquad][ipmt]->GetBinContent(PulseInt_quad[iquad][ipmt]->GetXaxis()->FindBin(xpeaks[1])));
 	  Gauss2->SetParLimits(4, xpeaks[1]-0.5, xpeaks[1]+0.5);
 	  Gauss2->SetParLimits(5, 0.5, 3.0);
+=======
+	  Gauss2->SetParLimits(1, xpeaks[0]-2, xpeaks[0]+2);
+	  Gauss2->SetParLimits(2, 0.5, 10.0);
+	  Gauss2->SetParLimits(3, 0.0,PulseInt_quad[iquad][ipmt]->GetBinContent(PulseInt_quad[iquad][ipmt]->GetXaxis()->FindBin(xpeaks[1])));
+	  Gauss2->SetParLimits(4, xpeaks[1]-0.5, xpeaks[1]+0.5);
+	  Gauss2->SetParLimits(5, 0.5, 4.0);
+>>>>>>> upstream/offline
 	  PulseInt_quad[iquad][ipmt]->Fit("Gauss2","RQN");
 	
 	  //Again Use the peak to fit the SPE with a Gaussian to determine the mean
@@ -659,10 +698,17 @@ void calibration::Terminate()
       Gauss4Poiss2->SetParameter(5,0.24);
       Gauss4Poiss2->SetParameter(6,0.12);
       Gauss4Poiss2->SetParameter(7,3.0);
+<<<<<<< HEAD
       Gauss4Poiss2->SetParameter(8,0.75);                    //.75
       Gauss4Poiss2->SetParameter(9,0.12);
       Gauss4Poiss2->SetParameter(10,4.0);
       Gauss4Poiss2->SetParameter(11,0.75);                   //.75
+=======
+      Gauss4Poiss2->SetParameter(8,0.75);
+      Gauss4Poiss2->SetParameter(9,0.12);
+      Gauss4Poiss2->SetParameter(10,4.0);
+      Gauss4Poiss2->SetParameter(11,0.75);
+>>>>>>> upstream/offline
       Gauss4Poiss2->SetParameter(12,8.0);
       Gauss4Poiss2->SetParameter(13,0.7);
       Gauss4Poiss2->SetParameter(14,  Poisson->GetParameter(0));  

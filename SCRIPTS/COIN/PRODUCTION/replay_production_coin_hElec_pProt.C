@@ -28,13 +28,13 @@ void replay_production_coin_hElec_pProt (Int_t RunNumber = 0, Int_t MaxEvent = 0
   pathList.push_back("./cache");
 
   //const char* RunFileNamePattern = "raw/coin_all_%05d.dat";
-   const char* ROOTFileNamePattern = "ROOTfiles/shms_coin_replay_production_all_%d_%d.root";
+   const char* ROOTFileNamePattern = "ROOTfilesMKJTest/shms_coin_replay_production_all_%d_%d.root";
   // const char* ROOTFileNamePattern = "ROOTfiles/coin_reftime_%d_%d.root";
   // const char* ROOTFileNamePattern = "ROOTfiles/coin_reftime_nocuts_%d_%d.root";
 
   // Load global parameters
   gHcParms->Define("gen_run_number", "Run Number", RunNumber);
-  gHcParms->AddString("g_ctp_database_filename", "DBASE/COIN/standard.database");
+  gHcParms->AddString("g_ctp_database_filename", "DBASE/COIN/standard_KaonLTCalib.database");
   gHcParms->Load(gHcParms->GetString("g_ctp_database_filename"), RunNumber);
   gHcParms->Load(gHcParms->GetString("g_ctp_parm_filename"));
   gHcParms->Load(gHcParms->GetString("g_ctp_kinematics_filename"), RunNumber);
