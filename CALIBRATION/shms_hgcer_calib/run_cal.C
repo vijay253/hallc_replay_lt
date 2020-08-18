@@ -63,17 +63,10 @@ void run_cal(string RunPrefix = "", Int_t NumEvents = 0, Int_t nRuns = 0, Int_t 
 
   // Change or add your own paths as needed!
   if(Hostname.Contains("farm")){ 
-<<<<<<< HEAD
     Rootpath = "/group/c-kaonlt/USERS/"+User+"/hallc_replay_lt/ROOTfilesMKJTest/";
   }
   else if(Hostname.Contains("qcd")){
     Rootpath = "/group/c-kaonlt/USERS/"+User+"/hallc_replay_lt/ROOTfilesMKJTest";
-=======
-    Rootpath = "/group/c-kaonlt/USERS/"+User+"/hallc_replay_lt/ROOTfiles/";
-  }
-  else if(Hostname.Contains("qcd")){
-    Rootpath = "/group/c-kaonlt/USERS/"+User+"/hallc_replay_lt/ROOTfiles";
->>>>>>> upstream/offline
   }
   else if (Hostname.Contains("phys.uregina.ca")){
     Rootpath = "/dsk3/"+User+"/JLab/ROOTfiles/";
