@@ -44,7 +44,13 @@ class calibration : public TSelector {
   TH1F            *fTim1;
   TH1F            *fTim2;
   TH1F            *fTim3;
-  TH1F            *fTim4;  
+  TH1F            *fTim4;
+  TH1F            *fTim1_full;  
+  TH1F            *fTim2_full;  
+  TH1F            *fTim3_full;  
+  TH1F            *fTim4_full;  
+  TH1F            *fP_hgcer_yAtCer;  
+  TH1F            *fP_hgcer_xAtCer;  
 
   // Declaration of histograms used in fitting/analysis
   TH1F *scaled_clone;
@@ -99,7 +105,7 @@ class calibration : public TSelector {
   TTreeReaderArray<Double_t> P_hgcer_xAtCer             = {fReader, "P.hgcer.xAtCer"};
   TTreeReaderArray<Double_t> P_hgcer_yAtCer             = {fReader, "P.hgcer.yAtCer"};
   
- calibration(TTree * /*tree*/ =0) : fChain(0) {fPulseInt = 0, fPulseInt_poiss = 0, fPulseInt_quad = 0, fCut_everything = 0, fCut_enorm=0, fCut_electron = 0, fCut_pion = 0, fBeta_Cut = 0, fBeta_Full = 0, fTiming_Cut = 0, fTiming_Full = 0,fTim1 =0,fTim2 =0,fTim3 = 0,fTim4 = 0,fFullRead = kFALSE, fFullShow = kFALSE, fTrack = kFALSE, fCut = kFALSE, fPions = kFALSE;}
+ calibration(TTree * /*tree*/ =0) : fChain(0) {fPulseInt = 0, fPulseInt_poiss = 0, fPulseInt_quad = 0, fCut_everything = 0, fCut_enorm=0, fCut_electron = 0, fCut_pion = 0, fBeta_Cut = 0, fBeta_Full = 0, fTiming_Cut = 0, fTiming_Full = 0,fTim1 =0, fTim1_full = 0,fTim2 =0, fTim2_full = 0, fTim3 = 0, fTim3_full = 0, fTim4 = 0, fTim4_full = 0, fP_hgcer_xAtCer = 0, fP_hgcer_yAtCer = 0, fFullRead = kFALSE, fFullShow = kFALSE, fTrack = kFALSE, fCut = kFALSE, fPions = kFALSE;}
   virtual ~calibration() { }
   virtual Int_t   Version() const { return 2; }
   virtual void    Begin(TTree *tree);
