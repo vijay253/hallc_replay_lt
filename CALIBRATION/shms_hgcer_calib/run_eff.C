@@ -37,7 +37,7 @@ void run_eff(Int_t RunNumber = 0, Int_t NumEvents = 0, Int_t coin = 0)
     cout << "\n\n";
   
   TChain ch("T");
-  if (coin == 1){ch.Add(Form("ROOTfiles/shms_coin_replay_production_all_%d_%d.root",8979,-1));}
+  if (coin == 1){ch.Add(Form("../../ROOTfilesMKJTest/shms_coin_replay_production_all_%d_%d.root", RunNumber, NumEvents));}
     // ch.Add(Form("ROOTfiles/shms_coin_replay_production_all_%d_%d.root",4781,-1));
       // ch.Add(Form("ROOTfiles/shms_coin_replay_production_all_%d_%d.root",4782,-1));
 			 //	  ch.Add(Form("ROOTfiles/shms_coin_replay_production_all_%d_%d.root",4883,-1));
