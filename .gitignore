@@ -26,6 +26,7 @@ ROOTfiles*
 OUTPUT
 .root_history
 raw*
+Calibration_plots
 raw.copiedtotape
 cache
 #PARAM/HMS/HODO/Calibration
@@ -61,3 +62,4 @@ hcana
 scratch
 ROOTfilesPion
 ROOTfiles
+ROOTfilesMKJTest
