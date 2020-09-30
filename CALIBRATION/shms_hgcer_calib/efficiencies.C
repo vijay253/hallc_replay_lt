@@ -341,9 +341,15 @@ void efficiencies::Terminate()
       NPE_piNoDet[ipmt] = dynamic_cast<TH1F*> (GetOutputList()->FindObject(Form("NPE_piNoDet_PMT%d",ipmt+1)));
       NPE_piDet[ipmt] = dynamic_cast<TH1F*> (GetOutputList()->FindObject(Form("NPE_piDet_PMT%d",ipmt+1)));
     }
-  
 
+  // path to save the output root format file
+  TString Outpath = "/u/group/c-kaonlt/USERS/vijay/hallc_replay_lt/CALIBRATION/shms_hgcer_calib/Efficiency_plots";
+ 
+  TString foutname;
+  foutname =  Outpath + "/"  "outfile.root";
 
+  TFile *OutHisto_file = new TFile(foutname,"RECREATE");
+    
   //Canvases to display efficiency information
   if (fShowall)
     {
@@ -355,7 +361,13 @@ void efficiencies::Terminate()
       fBeta_Full->Draw();
       Beta->cd(2);
       fBeta_Cut->Draw();
+      
+      TDirectory *Beta_info = OutHisto_file->mkdir("Beta Plots");
 
+      Beta_info->cd();
+      fBeta_Full->Write();
+      fBeta_Cut->Write();
+     
       //Canvas to show timing cut information
       TCanvas *Timing;
       Timing = new TCanvas("Timing", "Timing information for events");
@@ -363,8 +375,13 @@ void efficiencies::Terminate()
       Timing->cd(1);
       fTiming_Full->Draw();
       Timing->cd(2);
-
       fTiming_Cut->Draw();
+
+      TDirectory *timing_info = OutHisto_file->mkdir("Timing Plots");
+      
+      timing_info->cd();
+      fTiming_Full->Write();
+      fTiming_Cut->Write();
 
       //Canvas to show Particle ID cut information
       TCanvas *Fly_Pr;
@@ -376,23 +393,36 @@ void efficiencies::Terminate()
       fFly_Pr_eCut->Draw("Colz");
       Fly_Pr->cd(3);
       fFly_Pr_piCut->Draw("Colz");
+      
+      TDirectory *particle_id_info = OutHisto_file->mkdir("Particle ID cut information");
+	
+	particle_id_info->cd();
+      fFly_Pr_Full->Write();
+      fFly_Pr_eCut->Write();
+      fFly_Pr_piCut->Write();
 
       //Canvases to show Effects of HGC cut
       //Start with electrons
       gStyle->SetOptStat(11);
       TCanvas *Det_eCut;
+
+      TDirectory *cut_electrons = OutHisto_file->mkdir("Effect of performing cut for electrons per PMT");
+
       Det_eCut = new TCanvas("Det_eCut","Effect of performing cut for electrons per PMT");
       Det_eCut->Divide(2,4);
       for (Int_t ipad = 0; ipad < 8; ipad += 2)
 	{
 	  Det_eCut->cd(ipad+1);
 	  NPE_eNoDet[ipad/2]->Draw();
+	  cut_electrons->cd();
+	  NPE_eNoDet[ipad/2]->Write();
 	  gPad->Update();
 	  TPaveStats *s1 = (TPaveStats*) gPad->GetPrimitive("stats");
 	  s1->SetTextSize(0.1), s1->SetX1NDC(0.7), s1->SetY1NDC(0.5);
 
 	  Det_eCut->cd(ipad+2);
 	  NPE_eDet[ipad/2]->Draw();
+	  NPE_eDet[ipad/2]->Write();
 	  gPad->Update();
 	  TPaveStats *s2 = (TPaveStats*) gPad->GetPrimitive("stats");
 	  s2->SetTextSize(0.1), s2->SetX1NDC(0.7), s2->SetY1NDC(0.5);
@@ -406,21 +436,31 @@ void efficiencies::Terminate()
       Det_eCut_Full->cd(2);
       fNPE_Full_eDet->Draw();
 
+      TDirectory *cut_electrons_full = OutHisto_file->mkdir("Effect of performing cut for electrons");
+      cut_electrons_full->cd();
+      fNPE_Full_eNoDet->Write();
+      fNPE_Full_eDet->Write();
+
       //End with Pions
       gStyle->SetOptStat(11);
       TCanvas *Det_piCut;
       Det_piCut = new TCanvas("Det_piCut","Effect of performing cut for pions per PMT");
       Det_piCut->Divide(2,4);
+      TDirectory *pions = OutHisto_file->mkdir("Effect of performing cut for pions per PMT");
+
       for (Int_t ipad = 0; ipad < 8; ipad += 2)
 	{
 	  Det_piCut->cd(ipad+1);
 	  NPE_piNoDet[ipad/2]->Draw();
+	  pions->cd();
+	  NPE_piNoDet[ipad/2]->Write();
 	  gPad->Update();
 	  TPaveStats *s3 = (TPaveStats*) gPad->GetPrimitive("stats");
 	  s3->SetTextSize(0.1), s3->SetX1NDC(0.7), s3->SetY1NDC(0.5);
 
 	  Det_piCut->cd(ipad+2);
 	  NPE_piDet[ipad/2]->Draw();
+	  NPE_piDet[ipad/2]->Write();
 	  gPad->Update();
 	  TPaveStats *s4 = (TPaveStats*) gPad->GetPrimitive("stats");
 	  s4->SetTextSize(0.1), s4->SetX1NDC(0.7), s4->SetY1NDC(0.5);
@@ -433,7 +473,14 @@ void efficiencies::Terminate()
       fNPE_Full_piNoDet->Draw();
       Det_piCut_Full->cd(2);
       fNPE_Full_piDet->Draw();
+
+      TDirectory *cut_pions = OutHisto_file->mkdir("Effect of performing cut for pions");
+
+      cut_pions->cd();
+      fNPE_Full_piNoDet->Write();
+      fNPE_Full_piDet->Write();
     }
+  OutHisto_file->Close();
   
   //Output the actual efficiency information i.e. ratio of detected particles
   cout << Form("\nEfficiencies for the %s with a cut at %.1f are:\nPMT#  electrons  pions:electron", fNGC ? "NGC" : "HGC", fNGC ? fNGC_cut : fHGC_cut) << endl;

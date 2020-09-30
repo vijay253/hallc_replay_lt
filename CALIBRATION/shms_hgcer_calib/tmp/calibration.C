@@ -26,6 +26,7 @@ using namespace TMath;
 
 void calibration::Begin(TTree * /*tree*/)
 { printf("\n\n");
+
   TString option = GetOption();
   Info("Begin", "Starting calibration process");
   printf("\n\n");
@@ -35,18 +36,23 @@ void calibration::SlaveBegin(TTree * /*tree*/)
 {
   printf("\n\n");
   TString option = GetOption();
+
   // Initialize the histograms. Note they are binned per ADC channel which will be changed in the calibration analysis.
   Int_t ADC_min;
   Int_t ADC_max;
   Int_t bins;
+
   ADC_max = 35;
+
   // Initialize the histograms, they used in the quality control work. Note they are binned per ADC channel which will be changed in the calibration analysis
   Int_t ADC_poiss_min;
   Int_t ADC_poiss_max;
   Int_t bins_poiss;
+
   ADC_poiss_min = 0;
   ADC_poiss_max = 200;
   bins_poiss = 2*(abs(ADC_poiss_min) + abs(ADC_poiss_max));
+  
   fPulseInt_poiss = new TH1F*[4];
   fPulseInt = new TH1F*[4];
   fPulseInt_quad = new TH1F**[4];
@@ -54,54 +60,32 @@ void calibration::SlaveBegin(TTree * /*tree*/)
   fPulseInt_quad[1] = new TH1F*[4];
   fPulseInt_quad[2] = new TH1F*[4];
   fPulseInt_quad[3] = new TH1F*[4];
+
   for (Int_t ipmt = 0; ipmt < 4; ipmt++)    
-    {  // Separate ADC channel for each quadrant histogram
+    {
+      // Separate ADC channel for each quadrant histogram
+      
       if(ipmt == 0)
 	{
 	  ADC_min = 4;
 	  bins = 2*(abs(ADC_min) + abs(ADC_max));
 	  fPulseInt[ipmt] = new TH1F(Form("PulseInt_PMT%d",ipmt+1),Form("Pulse Integral PMT%d; ADC Channel (pC); Counts",ipmt+1), bins, ADC_min, ADC_max);
-	  GetOutputList()->Add(fPulseInt[ipmt]); 
+	  GetOutputList()->Add(fPulseInt[ipmt]);
+	  
 	  for (Int_t iquad = 0; iquad < 4; iquad++)
 	    {
 	      fPulseInt_quad[iquad][ipmt] = new TH1F(Form("PulseInt_quad%d_PMT%d",iquad+1,ipmt+1),Form("Pulse Integral PMT%d quad%d; ADC Channel (pC); Counts",ipmt+1,iquad+1),bins, ADC_min,ADC_max);
 	      GetOutputList()->Add(fPulseInt_quad[iquad][ipmt]);
-	    }      
+	    }
+      
 	  fPulseInt_poiss[ipmt] = new TH1F(Form("PulseInt_poiss_PMT%d",ipmt+1),Form("Pulse Integral PMT%d; ADC Channel (pC); Counts",ipmt+1), bins_poiss, ADC_poiss_min, ADC_poiss_max);
 	  GetOutputList()->Add(fPulseInt_poiss[ipmt]);
 	}
       if(ipmt == 1)
 	{
 	  ADC_min = 4;
-	  bins = 2*(abs(ADC_min) + abs(ADC_max));	  
-	  fPulseInt[ipmt] = new TH1F(Form("PulseInt_PMT%d",ipmt+1),Form("Pulse Integral PMT%d; ADC Channel (pC); Counts",ipmt+1), bins, ADC_min, ADC_max);
-	  GetOutputList()->Add(fPulseInt[ipmt]);
-	  for (Int_t iquad = 0; iquad < 4; iquad++)
-	    {
-	      fPulseInt_quad[iquad][ipmt] = new TH1F(Form("PulseInt_quad%d_PMT%d",iquad+1,ipmt+1),Form("Pulse Integral PMT%d quad%d; ADC Channel (pC); Counts",ipmt+1,iquad+1),bins, ADC_min,ADC_max);
-	      GetOutputList()->Add(fPulseInt_quad[iquad][ipmt]);
-	    }      
-	  fPulseInt_poiss[ipmt] = new TH1F(Form("PulseInt_poiss_PMT%d",ipmt+1),Form("Pulse Integral PMT%d; ADC Channel (pC); Counts",ipmt+1), bins_poiss, ADC_poiss_min, ADC_poiss_max);
-	  GetOutputList()->Add(fPulseInt_poiss[ipmt]);
-	} 
-      if(ipmt == 2)
-	{
-	  ADC_min = 4;
 	  bins = 2*(abs(ADC_min) + abs(ADC_max));
-	  fPulseInt[ipmt] = new TH1F(Form("PulseInt_PMT%d",ipmt+1),Form("Pulse Integral PMT%d; ADC Channel (pC); Counts",ipmt+1), bins, ADC_min, ADC_max);
-	  GetOutputList()->Add(fPulseInt[ipmt]);
-	  for (Int_t iquad = 0; iquad < 4; iquad++)
-	    {
-	      fPulseInt_quad[iquad][ipmt] = new TH1F(Form("PulseInt_quad%d_PMT%d",iquad+1,ipmt+1),Form("Pulse Integral PMT%d quad%d; ADC Channel (pC); Counts",ipmt+1,iquad+1), bins, ADC_min, ADC_max);
-	      GetOutputList()->Add(fPulseInt_quad[iquad][ipmt]);
-	    }      
-	  fPulseInt_poiss[ipmt] = new TH1F(Form("PulseInt_poiss_PMT%d",ipmt+1),Form("Pulse Integral PMT%d; ADC Channel (pC); Counts",ipmt+1), bins_poiss, ADC_poiss_min, ADC_poiss_max);
-	  GetOutputList()->Add(fPulseInt_poiss[ipmt]);
-	} 
-      if(ipmt == 3)
-	{
-	  ADC_min = 4;
-	  bins = 2*(abs(ADC_min) + abs(ADC_max));
+
 	  fPulseInt[ipmt] = new TH1F(Form("PulseInt_PMT%d",ipmt+1),Form("Pulse Integral PMT%d; ADC Channel (pC); Counts",ipmt+1), bins, ADC_min, ADC_max);
 	  GetOutputList()->Add(fPulseInt[ipmt]);
 	  for (Int_t iquad = 0; iquad < 4; iquad++)
@@ -109,6 +93,39 @@ void calibration::SlaveBegin(TTree * /*tree*/)
 	      fPulseInt_quad[iquad][ipmt] = new TH1F(Form("PulseInt_quad%d_PMT%d",iquad+1,ipmt+1),Form("Pulse Integral PMT%d quad%d; ADC Channel (pC); Counts",ipmt+1,iquad+1),bins, ADC_min,ADC_max);
 	      GetOutputList()->Add(fPulseInt_quad[iquad][ipmt]);
 	    }
+      
+	  fPulseInt_poiss[ipmt] = new TH1F(Form("PulseInt_poiss_PMT%d",ipmt+1),Form("Pulse Integral PMT%d; ADC Channel (pC); Counts",ipmt+1), bins_poiss, ADC_poiss_min, ADC_poiss_max);
+	  GetOutputList()->Add(fPulseInt_poiss[ipmt]);
+	} 
+      if(ipmt == 2)
+	{
+	  ADC_min = 4;
+	  bins = 2*(abs(ADC_min) + abs(ADC_max));
+
+	  fPulseInt[ipmt] = new TH1F(Form("PulseInt_PMT%d",ipmt+1),Form("Pulse Integral PMT%d; ADC Channel (pC); Counts",ipmt+1), bins, ADC_min, ADC_max);
+	  GetOutputList()->Add(fPulseInt[ipmt]);
+	  for (Int_t iquad = 0; iquad < 4; iquad++)
+	    {
+	      fPulseInt_quad[iquad][ipmt] = new TH1F(Form("PulseInt_quad%d_PMT%d",iquad+1,ipmt+1),Form("Pulse Integral PMT%d quad%d; ADC Channel (pC); Counts",ipmt+1,iquad+1), bins, ADC_min, ADC_max);
+	      GetOutputList()->Add(fPulseInt_quad[iquad][ipmt]);
+	    }
+      
+	  fPulseInt_poiss[ipmt] = new TH1F(Form("PulseInt_poiss_PMT%d",ipmt+1),Form("Pulse Integral PMT%d; ADC Channel (pC); Counts",ipmt+1), bins_poiss, ADC_poiss_min, ADC_poiss_max);
+	  GetOutputList()->Add(fPulseInt_poiss[ipmt]);
+	} 
+      if(ipmt == 3)
+	{
+	  ADC_min = 4;
+	  bins = 2*(abs(ADC_min) + abs(ADC_max));
+
+	  fPulseInt[ipmt] = new TH1F(Form("PulseInt_PMT%d",ipmt+1),Form("Pulse Integral PMT%d; ADC Channel (pC); Counts",ipmt+1), bins, ADC_min, ADC_max);
+	  GetOutputList()->Add(fPulseInt[ipmt]);
+	  for (Int_t iquad = 0; iquad < 4; iquad++)
+	    {
+	      fPulseInt_quad[iquad][ipmt] = new TH1F(Form("PulseInt_quad%d_PMT%d",iquad+1,ipmt+1),Form("Pulse Integral PMT%d quad%d; ADC Channel (pC); Counts",ipmt+1,iquad+1),bins, ADC_min,ADC_max);
+	      GetOutputList()->Add(fPulseInt_quad[iquad][ipmt]);
+	    }
+      
 	  fPulseInt_poiss[ipmt] = new TH1F(Form("PulseInt_poiss_PMT%d",ipmt+1),Form("Pulse Integral PMT%d; ADC Channel (pC); Counts",ipmt+1), bins_poiss, ADC_poiss_min, ADC_poiss_max);
 	  GetOutputList()->Add(fPulseInt_poiss[ipmt]);
 	}
@@ -117,6 +134,7 @@ void calibration::SlaveBegin(TTree * /*tree*/)
   // Histograms for Timing info visualizations 
   fTiming_Full = new TH1F("fTiming_full", "Full timing information for events;Time (ns);Counts", 200, -40 , 50);
   GetOutputList()->Add(fTiming_Full);
+
   //Individual Histogram for timing info for each PTM
   fTim1 = new TH1F("Timing_PMT1", "ADC TDC Diff PMT1 ; Time (ns) ;Counts", 200, -40.0, 50.0);
   GetOutputList()->Add(fTim1);
@@ -134,31 +152,45 @@ void calibration::SlaveBegin(TTree * /*tree*/)
   GetOutputList()->Add(fTim4);
   fTim4_full = new TH1F("Timing_full_PMT4", "ADC TDC Diff PMT1 ; Time (ns) ;Counts", 200, -40.0, 50.0);
   GetOutputList()->Add(fTim4_full);
+
+  yx_position_mkj = new TH2F("yx_position_mkj", "Distribution of Events in the HGC Mirror Plane; Y Position (cm) ; X Position (cm)", 200, -60.0, 60.0, 200, -60, 60);
+  GetOutputList()->Add(yx_position_mkj);
+  yx_position_cal = new TH2F("yx_position_cal", "Distribution of Events in the HGC Mirror Plane; Y Position (cm); X Position (cm)", 200, -60.0, 60.0, 200, -60, 60);
+  GetOutputList()->Add(yx_position_cal);
+
+
   //Histograms for Beta visualization
   fBeta_Cut = new TH1F("Beta_Cut", "Beta cut used for 'good' hits;Beta;Counts", 100, -0.1, 1.5);
   GetOutputList()->Add(fBeta_Cut);  
   fBeta_Full = new TH1F("Beta_Full", "Full beta for events;Beta;Counts", 100, -0.1, 1.5);
   GetOutputList()->Add(fBeta_Full);
+
   printf("\n\n");
 }
 
 Bool_t calibration::Process(Long64_t entry) 
 {
   fReader.SetEntry(entry);
+  
   //Output to verify script is working, and store the total number of events
   if (entry % 100000 == 0) printf("Processing Entry number %lld\n",entry);                          
+
   //Define quantities to loop over
   Int_t fpmts;
   fpmts = fhgc_pmts;   
+
+ 
   //Require only one good track reconstruction for the event
-  if (*Ndata_P_tr_beta != 1) return kTRUE;  
+  if (*Ndata_P_tr_beta != 1) return kTRUE;
+  
   //Redundant, but useful if multiple tracks are eventually allowed
   for (Int_t itrack = 0; itrack < *Ndata_P_tr_beta; itrack++)
     {
     //Require loose cut on particle velocity                                     
     fBeta_Full->Fill(P_tr_beta[itrack]);
     if (TMath::Abs(P_tr_beta[itrack] - 1.0) > 0.4) return kTRUE;
-    fBeta_Cut->Fill(P_tr_beta[itrack]);    
+    fBeta_Cut->Fill(P_tr_beta[itrack]);
+    
     //Filling the histograms
     for (Int_t ipmt = 0; ipmt < fpmts; ipmt++)
       {
@@ -189,31 +221,47 @@ Bool_t calibration::Process(Long64_t entry)
 	    if(P_hgcer_goodAdcTdcDiffTime[ipmt] >40 || P_hgcer_goodAdcTdcDiffTime[ipmt] < 30) continue;                                  
 	    fTim4->Fill(P_hgcer_goodAdcTdcDiffTime[ipmt]);
 	  }
+
 	//Cuts to remove entries corresponding to a PMT not registering a hit    
 	if (P_hgcer_goodAdcPulseInt[ipmt] == 0.0) continue;
+
+		      
 	//For quadrant cut strategy with no particle ID cut
 	//Fill histogram of the full PulseInt spectra for each PMT
 	fPulseInt[ipmt]->Fill(P_hgcer_goodAdcPulseInt[ipmt]);
 	fPulseInt_poiss[ipmt]->Fill(P_hgcer_goodAdcPulseInt[ipmt]);
+
 	//Retrieve information for particle tracking from focal plane
 	//Fill histograms of what each PMT registers from each quadrant, this requires tracking the particle from the focal plane. Each quadrant is defined from the parameter files
 	Float_t y_pos = P_tr_y[0] + P_tr_ph[0]*fhgc_zpos;
-	Float_t x_pos = P_tr_x[0] + P_tr_th[0]*fhgc_zpos;	  
+	Float_t x_pos = P_tr_x[0] + P_tr_th[0]*fhgc_zpos;
+	  
+	yx_position_cal->Fill(y_pos, x_pos);
+	yx_position_mkj->Fill(P_hgcer_yAtCer[0], P_hgcer_xAtCer[0]);
+
+
 	//Condition for quadrant 1 mirror
 	if (y_pos >= 4.6 && x_pos >= 9.4) fPulseInt_quad[0][ipmt]->Fill(P_hgcer_goodAdcPulseInt[ipmt]);
+
 	//Condition for quadrant 2 mirror
-	if (y_pos < 4.6 && x_pos >= 9.4) fPulseInt_quad[1][ipmt]->Fill(P_hgcer_goodAdcPulseInt[ipmt]);	
+	if (y_pos < 4.6 && x_pos >= 9.4) fPulseInt_quad[1][ipmt]->Fill(P_hgcer_goodAdcPulseInt[ipmt]);
+	
 	//Condition for quadrant 3 mirror
-	if (y_pos >= 4.6 && x_pos < 9.4) fPulseInt_quad[2][ipmt]->Fill(P_hgcer_goodAdcPulseInt[ipmt]);	
+	if (y_pos >= 4.6 && x_pos < 9.4) fPulseInt_quad[2][ipmt]->Fill(P_hgcer_goodAdcPulseInt[ipmt]);
+	
 	//Condition for quadrant 4 mirror
-	if (y_pos < 4.6 && x_pos < 9.4) fPulseInt_quad[3][ipmt]->Fill(P_hgcer_goodAdcPulseInt[ipmt]);	
+	if (y_pos < 4.6 && x_pos < 9.4) fPulseInt_quad[3][ipmt]->Fill(P_hgcer_goodAdcPulseInt[ipmt]);
+
       }//Marks end of loop over PMTs
-    }//Marks end of loop over tracks  
+    }//Marks end of loop over tracks
+  
   return kTRUE;
 }
 
 void calibration::SlaveTerminate()
-{}
+{
+}
+
 void calibration::Terminate()
 {  
   TString option = GetOption();
@@ -221,9 +269,11 @@ void calibration::Terminate()
   TString RunNumEndStr = option(5,20);
   Int_t RunNumStart = (RunNumStartStr.Atoi());
   Int_t RunNumEnd = (RunNumEndStr.Atoi());
+
   printf("\n");
   Info("Terminate", "Histograms formed, now starting calibration.\n'Peak Buffer full' is a good warning!\n");
   printf("\n");
+
   // Default name of the output pdf
   TString foutname;
   if ( RunNumStart == RunNumEnd){
@@ -232,8 +282,10 @@ void calibration::Terminate()
   else {
     foutname = Form("Calibration_plots/Calibration_plots_%i-%i", RunNumStart, RunNumEnd);
   }
+
   //Print all plots in a single pdf 
   TString outputpdf = foutname + ".pdf";
+
   //Have to extract the histograms from the OutputList
   TH1F* PulseInt[4];
   TH1F* PulseInt_poiss[4];
@@ -249,6 +301,7 @@ void calibration::Terminate()
     }
   
   //Canvases to display cut information
+  
   //Canvas to show beta cut information
   TCanvas *Beta;
   Beta = new TCanvas("Beta", "Beta information for events");
@@ -257,7 +310,9 @@ void calibration::Terminate()
   fBeta_Full->Draw(); 
   Beta->cd(2);
   fBeta_Cut->Draw(); 
+
   Beta->Print(outputpdf + '(');
+  
   //Canvas to show full timing  information
   TCanvas *Timing;
   Timing = new TCanvas("Timing", "Timing information for events");
@@ -265,6 +320,25 @@ void calibration::Terminate()
   gPad->SetLogy();
   fTiming_Full->Draw(); 
   Timing->Print(outputpdf);
+
+  TCanvas *focal_plane_cal;
+
+  focal_plane_cal = new TCanvas("focal_plane_cal", "Focal Plane info");
+  // gPad->SetLogy();
+  //  yx_position_cal->GetXaxis()->SetRange(-50,50);
+  //yx_position_cal->GetXaxis()->SetRange(-50,50);
+  yx_position_cal->Draw("Colz");
+  focal_plane_cal->Print(outputpdf);
+
+  TCanvas *focal_plane_mkj;
+
+  focal_plane_mkj = new TCanvas("focal_plane_mkj", "Focal Plane info");
+  //gPad->SetLogy();
+  // yx_position_mkj->GetXaxis()->SetRange(-50,50);
+  //focal_plane_mkj->GetYaxis()->SetRange(-50,50);
+  yx_position_mkj->Draw("Colz");
+  focal_plane_mkj->Print(outputpdf);
+
   //Canvas to show timing cuts info for each PMT
   TCanvas *Timing1;
   Timing1 = new TCanvas("Timing1","time cuts for each pmts");      
@@ -289,24 +363,30 @@ void calibration::Terminate()
   fTim4_full->SetFillColor(kBlue);
   fTim4_full->Draw();
   fTim4->Draw("same");   
-  Timing1->Print(outputpdf);  
+  Timing1->Print(outputpdf);
+  
   //Single Gaussian to find mean of SPE
   TF1 *Gauss1 = new TF1("Gauss1",gauss,100,3,3);
   Gauss1->SetParNames("Amplitude","Mean","Std. Dev.");
+
   //Sum of two Gaussians to determine SPE with minimal systematics
   TF1 *Gauss2 = new TF1("Gauss2",gauss,0, 20,6);                                               
   Gauss2->SetParNames("Amplitude 1","Mean 1","Std. Dev. 1","Amplitude 2","Mean 2","Std. Dev. 2");
   //Poisson distribution to remove high NPE background
   TF1 *Poisson = new TF1("Poisson",poisson,0.0,5.0,2.0);
   Poisson->SetParNames("Mean", "Amplitude");
+
   // The fit used in the quality control of the calibration. Sum of four gaussian and two poisson distribtions
   TF1 *Gauss4Poiss2 = new TF1("Gauss4Poiss2",fun_4gauss_2poisson, 0.0, 18.0 ,16.0);
+
   //Note about Poisson background, the mean varies between detectors/operating conditions so this quantity may require user input
   Double_t Poisson_mean;
   Poisson_mean = 5.5;  
+
   //Linear function used to determine goodness-of-fit for NPE spacing
   TF1 *Linear = new TF1("Linear",linear,0,5,2);
-  Linear->SetParNames("Slope", "Intercept");     
+  Linear->SetParNames("Slope", "Intercept");
+      
   //An array is used to store the means for the SPE, and to determine NPE spacing
   Double_t mean[3];
   Double_t SD[3];
@@ -314,15 +394,20 @@ void calibration::Terminate()
   Double_t x_npe[3], y_npe[3], x_err[3], y_err[3];
   Double_t RChi2[3];
   Bool_t GoodFit[3];
+
   //Two more arrays are used to store the estimates for the calibration constants and another two to store goodness of calibration
   Double_t calibration_mk1[4], calibration_mk1Err[4], calibration_mk2[4], calibration_mk2Err[4], pmt_calib[4], pmt_calib_mk2[4], calibration_weighted_ave[4], calibration_weighted_ave_err[4] ;
+
   TPaveText *GoodFitText = new TPaveText (0.65, 0.15, 0.85, 0.2, "NDC");
   GoodFitText->SetTextColor(kGreen);
   GoodFitText->AddText("Good fit");
+
+
   //TString outputpdf = "PMT_Fits.pdf";                        //Name of the pdf file
   //Array to hold the Poisson character of the calibrations
   Double_t Pois_Chi[2];
   Pois_Chi[0] = 0.0, Pois_Chi[1] = 0.0;
+  
   gStyle->SetOptStat(0); 
   //Main loop for calibration
   for (Int_t ipmt=0; ipmt < (fhgc_pmts); ipmt++)
@@ -333,43 +418,56 @@ void calibration::Terminate()
       mean[i] = 0.0;
       x_npe[i] = 0, y_npe[i] = 0, x_err[i] = 0, y_err[i] = 0;
       RChi2[i] = 0;
-      } 
-    //Begin strategy for quadrant cut calibration    
+      }
+ 
+    //Begin strategy for quadrant cut calibration
+    
     {
       //TSpectrum class is used to find the SPE peak using the search method
       TSpectrum *s = new TSpectrum(2);  
+
       //Create Canvas to see the search result for the SPE  
       quad_cuts[ipmt] = new TCanvas(Form("quad_cuts_%d",ipmt), Form("First Photoelectron peaks PMT%d",ipmt+1));
-      quad_cuts[ipmt]->Divide(3,1);  	  
-      Int_t ipad = 1; //Variable to draw over pads correctly      
+      quad_cuts[ipmt]->Divide(3,1);  
+	  
+      Int_t ipad = 1; //Variable to draw over pads correctly
+      
       for (Int_t iquad=0; iquad<4; iquad++)
 	{ 
 	  if (iquad == ipmt) continue; //ignore a PMT looking at its own quadrant
-	  quad_cuts[ipmt]->cd(ipad);	  
-	  if (PulseInt_quad[iquad][ipmt]->GetEntries() > 0)
-	    {		 
-	      //Perform search for the SPE and save the peak into the array xpeaks   //0.00	      
-	      s->Search(PulseInt_quad[iquad][ipmt], 2.0, "" ,0.05);	      
-	      TList *functions = PulseInt_quad[iquad][ipmt]->GetListOfFunctions(); 
-	      TPolyMarker *pm = (TPolyMarker*)functions->FindObject("TPolyMarker");
-	      
-	      if ( pm == nullptr)
-		{
-		  cout << "pm is null!!!\n\n ";                                   
-		  cout << "ipmt = " << ipmt << " and iquad = " << iquad <<endl;
-		  continue;
-		}	 		 	
-	      Double_t k[3];      	 
-	      Double_t * xpeaks = pm->GetX();   
-	      
+	  quad_cuts[ipmt]->cd(ipad);
+
+	  
+	if (PulseInt_quad[iquad][ipmt]->GetEntries() > 0)
+	  {		 
+	    //Perform search for the SPE and save the peak into the array xpeaks   //0.00
+	    
+	    s->Search(PulseInt_quad[iquad][ipmt], 2.0, "" ,0.05);
+                         
+	    TList *functions = PulseInt_quad[iquad][ipmt]->GetListOfFunctions(); 
+	    TPolyMarker *pm = (TPolyMarker*)functions->FindObject("TPolyMarker");
+		  
+	    if ( pm == nullptr)
+	      {
+		cout << "pm is null!!!\n\n ";                                   
+		cout << "ipmt = " << ipmt << " and iquad = " << iquad <<endl;
+		continue;
+	      }	 
+		 	
+	    Double_t k[3];      	 
+	    Double_t * xpeaks = pm->GetX();   
+
 	    //If amplitude of second peak greater than first peak then switch the order around  
 	    if (xpeaks[1] < xpeaks[0])
 	      {
 		k[0] =  xpeaks[0]; xpeaks[0] = xpeaks[1]; xpeaks[1] = k[0];
-	      }			    	   
-	    //Use the peak to fit the SPE with a Gaussian to determine the mean	    
-	    if(ipmt == 0)
-	      {  
+	      }		
+	    	   
+	  //Use the peak to fit the SPE with a Gaussian to determine the mean
+	 
+	  if(ipmt == 0)
+
+	    {  
 	      PulseInt_quad[iquad][ipmt]->Draw("E");
 	      Gauss2->SetRange(0,16);
 	      Gauss2->SetParameter(0, 2000);
@@ -384,181 +482,185 @@ void calibration::Terminate()
 	      Gauss2->SetParLimits(3, 0.0, PulseInt_quad[iquad][ipmt]->GetBinContent(PulseInt_quad[iquad][ipmt]->GetXaxis()->FindBin(xpeaks[1])));
 	      Gauss2->SetParLimits(4, 10, 17);   
 	      Gauss2->SetParLimits(5, 2.0, 4.0);
-	      PulseInt_quad[iquad][ipmt]->Fit("Gauss2","RQN");	           
+	      PulseInt_quad[iquad][ipmt]->Fit("Gauss2","RQN");	  
+         
 	      double x1 = Gauss2->GetParameter(1);
 	      double x2 = Gauss2->GetParameter(4);
 	      xpeaks[0] = x1;
 	      xpeaks[1] = x2;    
 	    }	
 
-	    if(ipmt == 1)
-	      
-	      {  
-		PulseInt_quad[iquad][ipmt]->Draw("E");
-		Gauss2->SetRange(0,16);
-		Gauss2->SetParameter(0, 2000);
-		Gauss2->SetParameter(1, 6.0);
-		Gauss2->SetParameter(2, 2);
-		Gauss2->SetParameter(3, 1000);
-		Gauss2->SetParameter(4, 12);	
-		Gauss2->SetParameter(5, 3.0);
-		Gauss2->SetParLimits(0, 0.0,PulseInt_quad[iquad][ipmt]->GetBinContent(PulseInt_quad[iquad][ipmt]->GetXaxis()->FindBin(xpeaks[0])));
-		Gauss2->SetParLimits(1, 5.0, 8.0);
-		Gauss2->SetParLimits(2, 0.5 , 4.0);
-		Gauss2->SetParLimits(3, 0.0, PulseInt_quad[iquad][ipmt]->GetBinContent(PulseInt_quad[iquad][ipmt]->GetXaxis()->FindBin(xpeaks[1])));
-		Gauss2->SetParLimits(4, 10, 17);   
-		Gauss2->SetParLimits(5, 2.0, 4.0);
-		PulseInt_quad[iquad][ipmt]->Fit("Gauss2","RQN");
-     		double x1 = Gauss2->GetParameter(1);
-		double x2 = Gauss2->GetParameter(4);	
-		xpeaks[0] = x1;
-		xpeaks[1] = x2;
-	      }	
+	  if(ipmt == 1)
 
-	    if(ipmt == 2)
-	      
-	      { 
-		PulseInt_quad[iquad][ipmt]->Draw("E");
-		Gauss2->SetRange(0,16);
-		Gauss2->SetParameter(0, 2000);
-		Gauss2->SetParameter(1, 6.0);
-		Gauss2->SetParameter(2, 2);
-		Gauss2->SetParameter(3, 1000);
-		Gauss2->SetParameter(4, 12);	
-		Gauss2->SetParameter(5, 3.0);
-		Gauss2->SetParLimits(0, 0.0,PulseInt_quad[iquad][ipmt]->GetBinContent(PulseInt_quad[iquad][ipmt]->GetXaxis()->FindBin(xpeaks[0])));
-		Gauss2->SetParLimits(1, 5.0, 7.0); //2.0
-		Gauss2->SetParLimits(2, 0.5 , 4.0);
-		Gauss2->SetParLimits(3, 0.0, PulseInt_quad[iquad][ipmt]->GetBinContent(PulseInt_quad[iquad][ipmt]->GetXaxis()->FindBin(xpeaks[1])));
-		Gauss2->SetParLimits(4, 10, 17);   //2.0
-		Gauss2->SetParLimits(5, 2.0, 4.0);
-		PulseInt_quad[iquad][ipmt]->Fit("Gauss2","RQN");
+	    {  
+	      PulseInt_quad[iquad][ipmt]->Draw("E");
+	      Gauss2->SetRange(0,16);
+	      Gauss2->SetParameter(0, 2000);
+	      Gauss2->SetParameter(1, 6.0);
+	      Gauss2->SetParameter(2, 2);
+	      Gauss2->SetParameter(3, 1000);
+	      Gauss2->SetParameter(4, 12);	
+	      Gauss2->SetParameter(5, 3.0);
+	      Gauss2->SetParLimits(0, 0.0,PulseInt_quad[iquad][ipmt]->GetBinContent(PulseInt_quad[iquad][ipmt]->GetXaxis()->FindBin(xpeaks[0])));
+	      Gauss2->SetParLimits(1, 5.0, 8.0);
+	      Gauss2->SetParLimits(2, 0.5 , 4.0);
+	      Gauss2->SetParLimits(3, 0.0, PulseInt_quad[iquad][ipmt]->GetBinContent(PulseInt_quad[iquad][ipmt]->GetXaxis()->FindBin(xpeaks[1])));
+	      Gauss2->SetParLimits(4, 10, 17);   
+	      Gauss2->SetParLimits(5, 2.0, 4.0);
+	      PulseInt_quad[iquad][ipmt]->Fit("Gauss2","RQN");
+     
+	      double x1 = Gauss2->GetParameter(1);
+	      double x2 = Gauss2->GetParameter(4);	
+	      xpeaks[0] = x1;
+	      xpeaks[1] = x2;
+	    }	
+
+	  if(ipmt == 2)
+
+	    { 
+	      PulseInt_quad[iquad][ipmt]->Draw("E");
+	      Gauss2->SetRange(0,16);
+	      Gauss2->SetParameter(0, 2000);
+	      Gauss2->SetParameter(1, 6.0);
+	      Gauss2->SetParameter(2, 2);
+	      Gauss2->SetParameter(3, 1000);
+	      Gauss2->SetParameter(4, 12);	
+	      Gauss2->SetParameter(5, 3.0);
+	      Gauss2->SetParLimits(0, 0.0,PulseInt_quad[iquad][ipmt]->GetBinContent(PulseInt_quad[iquad][ipmt]->GetXaxis()->FindBin(xpeaks[0])));
+	      Gauss2->SetParLimits(1, 5.0, 7.0); //2.0
+	      Gauss2->SetParLimits(2, 0.5 , 4.0);
+	      Gauss2->SetParLimits(3, 0.0, PulseInt_quad[iquad][ipmt]->GetBinContent(PulseInt_quad[iquad][ipmt]->GetXaxis()->FindBin(xpeaks[1])));
+	      Gauss2->SetParLimits(4, 10, 17);   //2.0
+	      Gauss2->SetParLimits(5, 2.0, 4.0);
+	      PulseInt_quad[iquad][ipmt]->Fit("Gauss2","RQN");
 	
-		double x1 = Gauss2->GetParameter(1);
-		double x2 = Gauss2->GetParameter(4);	
-		xpeaks[0] = x1;
-		xpeaks[1] = x2;
-	      }	
+	      double x1 = Gauss2->GetParameter(1);
+	      double x2 = Gauss2->GetParameter(4);	
+	      xpeaks[0] = x1;
+	      xpeaks[1] = x2;
+	    }	
 
-	    if(ipmt == 3)
+	  if(ipmt == 3)
 
-	      { 
-		PulseInt_quad[iquad][ipmt]->Draw("E");
-		Gauss2->SetRange(0,16);
-		Gauss2->SetParameter(0, 2000);
-		Gauss2->SetParameter(1, 6.0);
-		Gauss2->SetParameter(2, 2);
-		Gauss2->SetParameter(3, 1000);
-		Gauss2->SetParameter(4, 12);	
-		Gauss2->SetParameter(5, 3.0);
-		Gauss2->SetParLimits(0, 0.0,PulseInt_quad[iquad][ipmt]->GetBinContent(PulseInt_quad[iquad][ipmt]->GetXaxis()->FindBin(xpeaks[0])));
-		Gauss2->SetParLimits(1, 5.0, 8.0); //2.0
-		Gauss2->SetParLimits(2, 0.5 , 4.0);
-		Gauss2->SetParLimits(3, 0.0, PulseInt_quad[iquad][ipmt]->GetBinContent(PulseInt_quad[iquad][ipmt]->GetXaxis()->FindBin(xpeaks[1])));
-		Gauss2->SetParLimits(4, 10, 17);   //2.0
-		Gauss2->SetParLimits(5, 2.0, 4.0);
-		PulseInt_quad[iquad][ipmt]->Fit("Gauss2","RQN");       
-		double x1 = Gauss2->GetParameter(1);
-		double x2 = Gauss2->GetParameter(4);	
-		xpeaks[0] = x1;
-		xpeaks[1] = x2;
-	      }
+	    { 
+	      PulseInt_quad[iquad][ipmt]->Draw("E");
+	      Gauss2->SetRange(0,16);
+	      Gauss2->SetParameter(0, 2000);
+	      Gauss2->SetParameter(1, 6.0);
+	      Gauss2->SetParameter(2, 2);
+	      Gauss2->SetParameter(3, 1000);
+	      Gauss2->SetParameter(4, 12);	
+	      Gauss2->SetParameter(5, 3.0);
+	      Gauss2->SetParLimits(0, 0.0,PulseInt_quad[iquad][ipmt]->GetBinContent(PulseInt_quad[iquad][ipmt]->GetXaxis()->FindBin(xpeaks[0])));
+	      Gauss2->SetParLimits(1, 5.0, 8.0); //2.0
+	      Gauss2->SetParLimits(2, 0.5 , 4.0);
+	      Gauss2->SetParLimits(3, 0.0, PulseInt_quad[iquad][ipmt]->GetBinContent(PulseInt_quad[iquad][ipmt]->GetXaxis()->FindBin(xpeaks[1])));
+	      Gauss2->SetParLimits(4, 10, 17);   //2.0
+	      Gauss2->SetParLimits(5, 2.0, 4.0);
+	      PulseInt_quad[iquad][ipmt]->Fit("Gauss2","RQN");
+       
+	      double x1 = Gauss2->GetParameter(1);
+	      double x2 = Gauss2->GetParameter(4);	
+	      xpeaks[0] = x1;
+	      xpeaks[1] = x2;
+	    }
 
-	    //Again Use the peak to fit the SPE with a Gaussian to determine the mean
-	    Gauss2->SetParameter(0,Gauss2->GetParameter(0));
-	    Gauss2->SetParameter(1,Gauss2->GetParameter(1));
-	    Gauss2->SetParameter(2,Gauss2->GetParameter(2));
-	    Gauss2->SetParameter(3,Gauss2->GetParameter(3));
-	    Gauss2->SetParameter(4,Gauss2->GetParameter(4));	
-	    Gauss2->SetParameter(5,Gauss2->GetParameter(5));
-	    PulseInt_quad[iquad][ipmt]->Fit("Gauss2","RQ");		 
-	    // Draw individual functions from the Gauss2 function
-	    TF1 *g1 = new TF1("g1","gaus",0,35);
-	    
-	    if (xpeaks[1] < xpeaks[0])
-	      {
-		g1->SetParameter(0,Gauss2->GetParameter(3));
-		g1->SetParameter(1,Gauss2->GetParameter(4));
-		g1->SetParameter(2,Gauss2->GetParameter(5));
-		g1->SetLineColor(1);
-		g1->Draw("same");
-	      }
-	  
-	    else
-	      {
-	      
-		g1->SetParameter(0,Gauss2->GetParameter(0));
-		g1->SetParameter(1,Gauss2->GetParameter(1));
-		g1->SetParameter(2,Gauss2->GetParameter(2));
-		g1->SetLineColor(1);
-		g1->Draw("same");
-	      }
-	  
-	    TF1 *g2 = new TF1("g2","gaus",0,35);
-	    if (xpeaks[1] < xpeaks[0])
-	      {
-		g2->SetParameter(0,Gauss2->GetParameter(0));
-		g2->SetParameter(1,Gauss2->GetParameter(1));	
-		g2->SetParameter(2,Gauss2->GetParameter(2));
-		g2->SetParLimits(2, 0.5, 10.0);
-		g2->SetLineColor(3);	      	       
-		g2->Draw("same");
-	      }
-    
-	    else
-	      {
-		g2->SetParameter(0,Gauss2->GetParameter(3));
-		g2->SetParameter(1,Gauss2->GetParameter(4));	
-		g2->SetParameter(2,Gauss2->GetParameter(5));
-		g2->SetParLimits(2, 0.5, 10.0);
-		g2->SetLineColor(3);	      	       
-		g2->Draw("same");
-	      } 
+	  //Again Use the peak to fit the SPE with a Gaussian to determine the mean
+	  Gauss2->SetParameter(0,Gauss2->GetParameter(0));
+	  Gauss2->SetParameter(1,Gauss2->GetParameter(1));
+	  Gauss2->SetParameter(2,Gauss2->GetParameter(2));
+	  Gauss2->SetParameter(3,Gauss2->GetParameter(3));
+	  Gauss2->SetParameter(4,Gauss2->GetParameter(4));	
+	  Gauss2->SetParameter(5,Gauss2->GetParameter(5));
+	  PulseInt_quad[iquad][ipmt]->Fit("Gauss2","RQ");
 		 
-	    Double_t p0, p0_err, p1, p1_err, p2, p2_err, p3, p3_err, p4, p4_err, p5, p5_err, Chi, NDF;
-	    TPaveText *t = new TPaveText(0.45, 0.6, 0.9, 0.9, "NDC");
-	    {
-	    
-	      t->SetTextColor(kBlack);
-	      t->AddText(Form(" Chi/NDF     = %3.3f #/ %3.3f", Chi = Gauss2->GetChisquare(), NDF = Gauss2->GetNDF() ));
-	      t->AddText(Form(" Amplitude 1     = %3.3f #pm %3.3f", p0 = Gauss2->GetParameter(0), p0_err = Gauss2->GetParError(0)));
-	      t->AddText(Form(" Mean 1      = %3.3f #pm %3.3f", p1 = Gauss2->GetParameter(1), p1_err = Gauss2->GetParError(1)));
-	      t->AddText(Form(" Std. 1      = %3.3f #pm %3.3f", p2 = Gauss2->GetParameter(2), p2_err = Gauss2->GetParError(2)));
-	      t->AddText(Form(" Amplitude 2     = %3.3f #pm %3.3f", p3 = Gauss2->GetParameter(3), p3_err = Gauss2->GetParError(3)));
-	      t->AddText(Form(" Mean 2      = %3.3f #pm %3.3f", p4 = Gauss2->GetParameter(4), p4_err = Gauss2->GetParError(4)));
-	      t->AddText(Form(" Std. 2      = %3.3f #pm %3.3f", p5 = Gauss2->GetParameter(5), p5_err = Gauss2->GetParError(5)));
-	      t->Draw();
-	    }
-	  
-	    // Get values ONLY if number of events in first peak is over 40 at its maximum. Values are all 0 if this is NOT true
-	    if (xpeaks[0] > 4.0 && PulseInt_quad[iquad][ipmt]->GetBinContent(PulseInt_quad[iquad][ipmt]->GetXaxis()->FindBin(xpeaks[0])) > 40) mean[ipad-1] = Gauss2->GetParameter(1); 
-	    if (xpeaks[0] > 4.0 && PulseInt_quad[iquad][ipmt]->GetBinContent(PulseInt_quad[iquad][ipmt]->GetXaxis()->FindBin(xpeaks[0])) > 40) SD[ipad-1] = Gauss2->GetParameter(2); 
-	    if (xpeaks[0] > 4.0 && PulseInt_quad[iquad][ipmt]->GetBinContent(PulseInt_quad[iquad][ipmt]->GetXaxis()->FindBin(xpeaks[0])) > 40) RChi2[ipad-1] = Gauss2->GetChisquare()/Gauss2->GetNDF(); 
-	    if (xpeaks[0] > 4.0 && PulseInt_quad[iquad][ipmt]->GetBinContent(PulseInt_quad[iquad][ipmt]->GetXaxis()->FindBin(xpeaks[0])) > 40) mean_err[ipad-1] = Gauss2->GetParError(1);
-	  
-	    if (PulseInt_quad[iquad][ipmt]->GetBinContent(PulseInt_quad[iquad][ipmt]->GetXaxis()->FindBin(xpeaks[0])) > 2000){
-	      // Set Boolean of whether fit is good or not here, based upon reduced Chi2 of the fit
-	      TPaveText *BadFitText = new TPaveText (0.65, 0.15, 0.85, 0.2, "NDC");  
-	      BadFitText->SetTextColor(kRed);
-	      BadFitText->AddText("Bad fit");
-	      if (RChi2[ipad-1] < 0.5 || RChi2[ipad-1] > 30)
-		{
-		
-		  GoodFit[ipad-1] = kFALSE; 
-		  BadFitText->Draw("same");
-		} 
-	      else if  (RChi2[ipad-1] > 0.5 && RChi2[ipad-1] < 30)
-		{
-		
-		  GoodFit[ipad-1] = kTRUE;
-		  GoodFitText->Draw("same");
-		} 
-	    }
+	  // Draw individual functions from the Gauss2 function
+	  TF1 *g1 = new TF1("g1","gaus",0,35);
 
-	    else
-	      {
+	  if (xpeaks[1] < xpeaks[0])
+	    {
+	      g1->SetParameter(0,Gauss2->GetParameter(3));
+	      g1->SetParameter(1,Gauss2->GetParameter(4));
+	      g1->SetParameter(2,Gauss2->GetParameter(5));
+	      g1->SetLineColor(1);
+	      g1->Draw("same");
+	    }
+	  
+	  else
+	    {
 	      
-		TPaveText *BadFitText = new TPaveText (0.65, 0.15, 0.85, 0.2, "NDC");  
+	      g1->SetParameter(0,Gauss2->GetParameter(0));
+	      g1->SetParameter(1,Gauss2->GetParameter(1));
+	      g1->SetParameter(2,Gauss2->GetParameter(2));
+	      g1->SetLineColor(1);
+	      g1->Draw("same");
+	    }
+	  
+	  TF1 *g2 = new TF1("g2","gaus",0,35);
+	  if (xpeaks[1] < xpeaks[0])
+	    {
+	      g2->SetParameter(0,Gauss2->GetParameter(0));
+	      g2->SetParameter(1,Gauss2->GetParameter(1));	
+	      g2->SetParameter(2,Gauss2->GetParameter(2));
+	      g2->SetParLimits(2, 0.5, 10.0);
+	      g2->SetLineColor(3);	      	       
+	      g2->Draw("same");
+	    }
+    
+	  else
+	    {
+	      g2->SetParameter(0,Gauss2->GetParameter(3));
+	      g2->SetParameter(1,Gauss2->GetParameter(4));	
+	      g2->SetParameter(2,Gauss2->GetParameter(5));
+	      g2->SetParLimits(2, 0.5, 10.0);
+	      g2->SetLineColor(3);	      	       
+	      g2->Draw("same");
+	  } 
+		 
+	  Double_t p0, p0_err, p1, p1_err, p2, p2_err, p3, p3_err, p4, p4_err, p5, p5_err, Chi, NDF;
+	  TPaveText *t = new TPaveText(0.45, 0.6, 0.9, 0.9, "NDC");
+	  {
+	    
+	    t->SetTextColor(kBlack);
+	    t->AddText(Form(" Chi/NDF     = %3.3f #/ %3.3f", Chi = Gauss2->GetChisquare(), NDF = Gauss2->GetNDF() ));
+	    t->AddText(Form(" Amplitude 1     = %3.3f #pm %3.3f", p0 = Gauss2->GetParameter(0), p0_err = Gauss2->GetParError(0)));
+	    t->AddText(Form(" Mean 1      = %3.3f #pm %3.3f", p1 = Gauss2->GetParameter(1), p1_err = Gauss2->GetParError(1)));
+	    t->AddText(Form(" Std. 1      = %3.3f #pm %3.3f", p2 = Gauss2->GetParameter(2), p2_err = Gauss2->GetParError(2)));
+	    t->AddText(Form(" Amplitude 2     = %3.3f #pm %3.3f", p3 = Gauss2->GetParameter(3), p3_err = Gauss2->GetParError(3)));
+	    t->AddText(Form(" Mean 2      = %3.3f #pm %3.3f", p4 = Gauss2->GetParameter(4), p4_err = Gauss2->GetParError(4)));
+	    t->AddText(Form(" Std. 2      = %3.3f #pm %3.3f", p5 = Gauss2->GetParameter(5), p5_err = Gauss2->GetParError(5)));
+	    t->Draw();
+	  }
+	  
+	  // Get values ONLY if number of events in first peak is over 40 at its maximum. Values are all 0 if this is NOT true
+	  if (xpeaks[0] > 4.0 && PulseInt_quad[iquad][ipmt]->GetBinContent(PulseInt_quad[iquad][ipmt]->GetXaxis()->FindBin(xpeaks[0])) > 40) mean[ipad-1] = Gauss2->GetParameter(1); 
+	  if (xpeaks[0] > 4.0 && PulseInt_quad[iquad][ipmt]->GetBinContent(PulseInt_quad[iquad][ipmt]->GetXaxis()->FindBin(xpeaks[0])) > 40) SD[ipad-1] = Gauss2->GetParameter(2); 
+	  if (xpeaks[0] > 4.0 && PulseInt_quad[iquad][ipmt]->GetBinContent(PulseInt_quad[iquad][ipmt]->GetXaxis()->FindBin(xpeaks[0])) > 40) RChi2[ipad-1] = Gauss2->GetChisquare()/Gauss2->GetNDF(); 
+	  if (xpeaks[0] > 4.0 && PulseInt_quad[iquad][ipmt]->GetBinContent(PulseInt_quad[iquad][ipmt]->GetXaxis()->FindBin(xpeaks[0])) > 40) mean_err[ipad-1] = Gauss2->GetParError(1);
+	  
+	  if (PulseInt_quad[iquad][ipmt]->GetBinContent(PulseInt_quad[iquad][ipmt]->GetXaxis()->FindBin(xpeaks[0])) > 2000){
+	    // Set Boolean of whether fit is good or not here, based upon reduced Chi2 of the fit
+	    TPaveText *BadFitText = new TPaveText (0.65, 0.15, 0.85, 0.2, "NDC");  
+	    BadFitText->SetTextColor(kRed);
+	    BadFitText->AddText("Bad fit");
+	    if (RChi2[ipad-1] < 0.5 || RChi2[ipad-1] > 30)
+	      {
+		
+		GoodFit[ipad-1] = kFALSE; 
+		BadFitText->Draw("same");
+	      } 
+	    else if  (RChi2[ipad-1] > 0.5 && RChi2[ipad-1] < 30)
+	      {
+		
+		GoodFit[ipad-1] = kTRUE;
+		GoodFitText->Draw("same");
+	      } 
+	  }
+
+	  else
+	    {
+	      
+	      TPaveText *BadFitText = new TPaveText (0.65, 0.15, 0.85, 0.2, "NDC");  
 	      BadFitText->SetTextColor(kRed);
 	      BadFitText->AddText("Bad fit");  	  
 	      if (RChi2[ipad-1] < 0.5 || RChi2[ipad-1] > 20)
@@ -597,7 +699,26 @@ void calibration::Terminate()
       xscale = WeightAvgSum1/WeightAvgSum2;
       xscaleErr = 1/TMath::Sqrt(WeightAvgSum2);    
 
-      //Perform check if the statistics were too low to get a good estimate of the SPE mean	  
+      //Perform check if the statistics were too low to get a good estimate of the SPE mean
+      if (xscale < 1.0)
+	{
+	  //Repeat the exact same procedure for the SPE of each quadrant, except now its for the full PMT spectra
+	  low_stats_ipmt = new TCanvas(Form("low_stats_%d",ipmt),Form("Low stats analysis for PMT%d",ipmt+1));
+	  low_stats_ipmt->cd(1);
+	  PulseInt[ipmt]->GetXaxis()->SetRangeUser(0,20);
+	  s->Search(PulseInt[ipmt], 3.5, "nobackground", 0.001);
+	  TList *functions = PulseInt[ipmt]->GetListOfFunctions();
+	  TPolyMarker *pm = (TPolyMarker*)functions->FindObject("TPolyMarker");
+	  Double_t *xpeaks = pm->GetX();
+	  Gauss1->SetRange(xpeaks[0]-1, xpeaks[0]+1);
+	  Gauss1->SetParameter(1, xpeaks[0]);
+	  Gauss1->SetParameter(2, 3);
+	  Gauss1->SetParLimits(0, 0., 3000.);
+	  PulseInt[ipmt]->GetXaxis()->SetRangeUser(0,200);
+	  PulseInt[ipmt]->Fit("Gauss1","RQ");
+	  xscale = Gauss1->GetParameter(1);
+	  xscaleErr = Gauss1->GetParError(1);
+	}	  
 
       //Scale full ADC spectra according to the mean of the SPE. This requires filling a new histogram with the same number of bins but scaled min/max
       Int_t nbins;
@@ -1008,14 +1129,30 @@ void calibration::Terminate()
     {
     calibration_out << ("; Weighted average of first and second guesses") << endl;
     calibration_out << (" phgcer_adc_to_npe = ");
-    for (Int_t ipmt = 0; ipmt < 4; ipmt++)
-      {
-	if (ipmt != 3) calibration_out << Form("1.0/%3.3f, ",calibration_weighted_ave[ipmt]);
-	// For final PMT, do not print trailing comma and whitespace after value
-	else if (ipmt == 3) calibration_out << Form("1.0/%3.3f",calibration_weighted_ave[ipmt]);
-      }
-    calibration_out.close();
+    for (Int_t ipmt = 0; ipmt < 4; ipmt++){
+      //calibration << Form("phgcer_adc_to_npe: PMT%i = ", 1+ipmt);
+      if (ipmt != 3) calibration_out << Form("1.0/%3.3f, ",calibration_weighted_ave[ipmt]);
+      else if (ipmt == 3) calibration_out << Form("1.0/%3.3f",calibration_weighted_ave[ipmt]);
     }
+    /*  calibration_out << ("")<<endl;
+    calibration_out << ("; Second guess parameters") << endl;
+    calibration_out << (";phgcer_adc_to_npe=");
+    for (Int_t ipmt = 0; ipmt < 4; ipmt++){
+      // calibration << Form("From quality control, phgcer_adc_to_npe");
+      if (ipmt != 3) calibration_out << Form("1./%3.3f, ",calibration_mk2[ipmt]);
+      else if (ipmt ==3) calibration_out << Form("1.0/%3.3f",calibration_mk2[ipmt]);
+    }
+    
+    calibration_out << ("")<<endl;
+    calibration_out << ("; Weighted average of first and second guesses") << endl;
+    calibration_out << ("phgcer_adc_to_npe=");
+    for (Int_t ipmt = 0; ipmt < 4; ipmt++){
+      // calibration << Form("From quality control, phgcer_adc_to_npe");
+      if (ipmt != 3) calibration_out << Form("1./%3.3f, ",calibration_weighted_ave[ipmt]);
+      else if (ipmt ==3) calibration_out << Form("1.0/%3.3f",calibration_weighted_ave[ipmt]);
+      }*/
+    calibration_out.close();
+  }
   // Second time to save the parameters
   ofstream calibration_out2;
   if(RunNumStart == RunNumEnd)
