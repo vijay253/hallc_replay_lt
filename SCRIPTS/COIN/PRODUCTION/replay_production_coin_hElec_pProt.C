@@ -28,7 +28,7 @@ void replay_production_coin_hElec_pProt (Int_t RunNumber = 0, Int_t MaxEvent = 0
   pathList.push_back("./cache");
 
   //const char* RunFileNamePattern = "raw/coin_all_%05d.dat";
-   const char* ROOTFileNamePattern = "ROOTfilesMKJTest/shms_coin_replay_production_all_%d_%d.root";
+   const char* ROOTFileNamePattern = "ROOTfilesMKJTest/Full_shms_coin_replay_production_all_%d_%d.root";
   // const char* ROOTFileNamePattern = "ROOTfiles/coin_reftime_%d_%d.root";
   // const char* ROOTFileNamePattern = "ROOTfiles/coin_reftime_nocuts_%d_%d.root";
 
