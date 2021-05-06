@@ -7,7 +7,7 @@
 #include <string>
 #include <stdio.h>
 
-// Expected input is, rootfile prefix, number of events per run, number of runs to chain (1 to 3) and run number(s) 
+// Expected input is, rootfile prefix, number of events per run, number of runs to chain (1 to 10) and run number(s) 
 void run_cal(string RunPrefix = "", Int_t NumEvents = 0, Int_t nRuns = 0, Int_t RunNumber1 = 0, Int_t RunNumber2 = 0, Int_t RunNumber3 = 0, Int_t RunNumber4 = 0, Int_t RunNumber5 = 0, Int_t RunNumber6 = 0, Int_t RunNumber7 = 0, Int_t RunNumber8 = 0, Int_t RunNumber9 = 0, Int_t RunNumber10 = 0)
 {
   TString Hostname = gSystem->HostName();
@@ -25,7 +25,7 @@ void run_cal(string RunPrefix = "", Int_t NumEvents = 0, Int_t nRuns = 0, Int_t 
   TString rootFileNameString10;
   TString RunPref;
   
-  cout << "Processing HGC calibration, expected input is, rootfile prefix, number of runs to chain (1 to 10), run number(s) and number of events per run" << endl;
+  cout << "Processing HGC calibration, expected input is, rootfile prefix, number of events per run, number of runs to chain (1 to 10) and their run number(s)" << endl;
 
   RunPref = RunPrefix;
   if(RunPref == "") 
@@ -45,13 +45,13 @@ void run_cal(string RunPrefix = "", Int_t NumEvents = 0, Int_t nRuns = 0, Int_t 
       cin >> nRuns;
       if (nRuns != 1 && nRuns !=2 && nRuns != 3 && nRuns != 4 &&  nRuns != 5 && nRuns != 6 && nRuns != 7 && nRuns != 8 && nRuns != 9 && nRuns != 10){
       cerr << "...Invalid entry\n";
-      cerr << "Enter either 1, 2, ....upto 10\n";
+      cerr << "Enter integer between 1 and 10 \n";
       return;
       }   
     }
   if (RunNumber1 == 0)
     {
-      cout << "Enter the 1th Run Number : ";
+      cout << "Enter 1st run number : ";
       cin >> RunNumber1;
       if (RunNumber1 <= 0) return;
     }
@@ -59,7 +59,7 @@ void run_cal(string RunPrefix = "", Int_t NumEvents = 0, Int_t nRuns = 0, Int_t 
     {
       if (RunNumber2 == 0)
 	{
-	  cout << "Enter  2th Run Number : ";
+	  cout << "Enter 2nd run number : ";
 	  cin >> RunNumber2;
 	  if (RunNumber2 <= 0) return;
 	}
@@ -68,7 +68,7 @@ void run_cal(string RunPrefix = "", Int_t NumEvents = 0, Int_t nRuns = 0, Int_t 
     {
       if (RunNumber3 == 0)
 	{
-	  cout << "Enter  3th Run Number : ";
+	  cout << "Enter 3rd run number : ";
 	  cin >> RunNumber3;
 	  if (RunNumber3 <= 0) return;
 	}
@@ -77,7 +77,7 @@ void run_cal(string RunPrefix = "", Int_t NumEvents = 0, Int_t nRuns = 0, Int_t 
     {
     if (RunNumber4 == 0)
       {
-	cout << "Enter  4th Run Number : ";
+	cout << "Enter 4th run number : ";
 	cin >> RunNumber4;
 	if (RunNumber4 <= 0) return;
       }
@@ -86,7 +86,7 @@ void run_cal(string RunPrefix = "", Int_t NumEvents = 0, Int_t nRuns = 0, Int_t 
     {
       if (RunNumber5 == 0)
 	{
-	  cout << "Enter  5th Run Number : ";
+	  cout << "Enter 5th run number : ";
 	  cin >> RunNumber5;
 	  if (RunNumber5 <= 0) return;
 	}
@@ -96,7 +96,7 @@ void run_cal(string RunPrefix = "", Int_t NumEvents = 0, Int_t nRuns = 0, Int_t 
    {
      if (RunNumber6 == 0)
        {
-	 cout << "Enter  6th Run Number : ";
+	 cout << "Enter 6th run number : ";
 	 cin >> RunNumber6;
 	 if (RunNumber6 <= 0) return;
        }
@@ -105,7 +105,7 @@ void run_cal(string RunPrefix = "", Int_t NumEvents = 0, Int_t nRuns = 0, Int_t 
    {
      if (RunNumber7 == 0)
        {
-	 cout << "Enter  7th Run Number : ";
+	 cout << "Enter 7th run number : ";
 	 cin >> RunNumber7;
 	 if (RunNumber7 <= 0) return;
        }
@@ -115,7 +115,7 @@ void run_cal(string RunPrefix = "", Int_t NumEvents = 0, Int_t nRuns = 0, Int_t 
    {
      if (RunNumber8 == 0)
        {
-	 cout << "Enter  8th Run Number : ";
+	 cout << "Enter 8th run number : ";
 	 cin >> RunNumber8;
 	 if (RunNumber8 <= 0) return;
        }
@@ -125,7 +125,7 @@ void run_cal(string RunPrefix = "", Int_t NumEvents = 0, Int_t nRuns = 0, Int_t 
    {
     if (RunNumber9 == 0)
       {
-	cout << "Enter  9th Run Number : ";
+	cout << "Enter 9th run number : ";
 	cin >> RunNumber9;
 	if (RunNumber9 <= 0) return;
       }
@@ -135,26 +135,23 @@ void run_cal(string RunPrefix = "", Int_t NumEvents = 0, Int_t nRuns = 0, Int_t 
    {
      if (RunNumber10 == 0)
        {
-	 cout << "Enter  10th Run Number : ";
+	 cout << "Enter 10th run number : ";
 	 cin >> RunNumber10;
 	 if (RunNumber10 <= 0) return;
        }
    }
- 
-  cin.ignore(numeric_limits<streamsize>::max(), '\n');
+ // The line below is what is causing the script to hang until the user enters a carriage return, what is the purpose of this line?
+ //cin.ignore(numeric_limits<streamsize>::max(), '\n');
   
   // Change or add your own paths as needed!
+  // This is where the script will look for the rootfiles to analyse
   if(Hostname.Contains("farm"))
     { 
-      Rootpath = "/group/c-kaonlt/USERS/"+User+"/hallc_replay_lt/ROOTfilesMKJTest/";
+      Rootpath = "/group/c-pionlt/USERS/"+User+"/hallc_replay_lt/ROOTfiles/Calib/HGC/";
     }
   else if(Hostname.Contains("qcd"))
     {
-    Rootpath = "/group/c-kaonlt/USERS/"+User+"/hallc_replay_lt/ROOTfilesMKJTest";
-    }
-  else if (Hostname.Contains("phys.uregina.ca"))
-    {
-      Rootpath = "/dsk3/"+User+"/JLab/ROOTfiles/";
+      Rootpath = "/group/c-pionlt/USERS/"+User+"/hallc_replay_lt/ROOTfiles/Calib/HGC/";
     }
   
   rootFileNameString1 = Rootpath + Form("%s_%i_%i.root", RunPrefix.c_str(), RunNumber1, NumEvents);
@@ -164,7 +161,7 @@ void run_cal(string RunPrefix = "", Int_t NumEvents = 0, Int_t nRuns = 0, Int_t 
       cerr << "!!!!! ERROR !!!!! " << endl << rootFileNameString1 <<  " not found" << endl <<  "!!!!! ERRROR !!!!!" << endl;
       return; 
     }
-  if(nRuns >1)
+  if(nRuns > 1)
     {
       rootFileNameString2 = Rootpath + Form("%s_%i_%i.root", RunPrefix.c_str(), RunNumber2, NumEvents);
       if (gSystem->AccessPathName(rootFileNameString2) == kTRUE)
@@ -178,9 +175,9 @@ void run_cal(string RunPrefix = "", Int_t NumEvents = 0, Int_t nRuns = 0, Int_t 
       rootFileNameString3 = Rootpath + Form("%s_%i_%i.root", RunPrefix.c_str(), RunNumber3, NumEvents);
       if (gSystem->AccessPathName(rootFileNameString3) == kTRUE)
 	{
-	cerr << "!!!!! ERROR !!!!! " << endl << rootFileNameString3 <<  " not found" << endl <<  "!!!!! ERRROR !!!!!" << endl;
-	return; 
-      }
+	  cerr << "!!!!! ERROR !!!!! " << endl << rootFileNameString3 <<  " not found" << endl <<  "!!!!! ERRROR !!!!!" << endl;
+	  return; 
+	}
     }
   if(nRuns > 3)
     {
@@ -208,15 +205,16 @@ void run_cal(string RunPrefix = "", Int_t NumEvents = 0, Int_t nRuns = 0, Int_t 
 	  cerr << "!!!!! ERROR !!!!! " << endl << rootFileNameString6 <<  " not found" << endl <<  "!!!!! ERRROR !!!!!" << endl;
 	  return; 
 	}
-    } if(nRuns > 6)
+    } 
+  if(nRuns > 6)
+    {
+      rootFileNameString7 = Rootpath + Form("%s_%i_%i.root", RunPrefix.c_str(), RunNumber7, NumEvents);
+      if (gSystem->AccessPathName(rootFileNameString7) == kTRUE)
 	{
-	  rootFileNameString7 = Rootpath + Form("%s_%i_%i.root", RunPrefix.c_str(), RunNumber7, NumEvents);
-	  if (gSystem->AccessPathName(rootFileNameString7) == kTRUE)
-	    {
-	      cerr << "!!!!! ERROR !!!!! " << endl << rootFileNameString7 <<  " not found" << endl <<  "!!!!! ERRROR !!!!!" << endl;
-	      return; 
-	    }
-	} 
+	  cerr << "!!!!! ERROR !!!!! " << endl << rootFileNameString7 <<  " not found" << endl <<  "!!!!! ERRROR !!!!!" << endl;
+	  return; 
+	}
+    } 
   if(nRuns > 7)
     {
       rootFileNameString8 = Rootpath + Form("%s_%i_%i.root", RunPrefix.c_str(), RunNumber8, NumEvents);
@@ -225,23 +223,25 @@ void run_cal(string RunPrefix = "", Int_t NumEvents = 0, Int_t nRuns = 0, Int_t 
 	  cerr << "!!!!! ERROR !!!!! " << endl << rootFileNameString8 <<  " not found" << endl <<  "!!!!! ERRROR !!!!!" << endl;
 	  return; 
 	}
-    } if(nRuns > 8)
+    } 
+  if(nRuns > 8)
+    {
+      rootFileNameString9 = Rootpath + Form("%s_%i_%i.root", RunPrefix.c_str(), RunNumber9, NumEvents);
+      if (gSystem->AccessPathName(rootFileNameString9) == kTRUE)
 	{
-	  rootFileNameString9 = Rootpath + Form("%s_%i_%i.root", RunPrefix.c_str(), RunNumber9, NumEvents);
-	  if (gSystem->AccessPathName(rootFileNameString9) == kTRUE)
-	    {
-	      cerr << "!!!!! ERROR !!!!! " << endl << rootFileNameString9 <<  " not found" << endl <<  "!!!!! ERRROR !!!!!" << endl;
-	      return; 
-	    }
-	} if(nRuns > 9)
-	    {
-	      rootFileNameString10 = Rootpath + Form("%s_%i_%i.root", RunPrefix.c_str(), RunNumber10, NumEvents);
-	      if (gSystem->AccessPathName(rootFileNameString10) == kTRUE)
-		{
-		  cerr << "!!!!! ERROR !!!!! " << endl << rootFileNameString10 <<  " not found" << endl <<  "!!!!! ERRROR !!!!!" << endl;
-		  return; 
-		}
-	    }
+	  cerr << "!!!!! ERROR !!!!! " << endl << rootFileNameString9 <<  " not found" << endl <<  "!!!!! ERRROR !!!!!" << endl;
+	  return; 
+	}
+    } 
+  if(nRuns > 9)
+    {
+      rootFileNameString10 = Rootpath + Form("%s_%i_%i.root", RunPrefix.c_str(), RunNumber10, NumEvents);
+      if (gSystem->AccessPathName(rootFileNameString10) == kTRUE)
+	{
+	  cerr << "!!!!! ERROR !!!!! " << endl << rootFileNameString10 <<  " not found" << endl <<  "!!!!! ERRROR !!!!!" << endl;
+	  return; 
+	}
+    }
     
   TChain ch("T");
   ch.Add(rootFileNameString1);
@@ -329,7 +329,6 @@ void run_cal(string RunPrefix = "", Int_t NumEvents = 0, Int_t nRuns = 0, Int_t 
     {
     option = Form("%i,%i", RunNumber1, RunNumber10);
     }
-
 
   proof->SetProgressDialog(0);  
   ch.SetProof();
